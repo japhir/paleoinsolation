@@ -1,35 +1,33 @@
---- snvec/snvec-3.7.5.c_bak	2024-12-10 18:06:34.418793238 -1000
-+++ snvec/snvec-3.7.5.c	2024-12-10 18:10:59.800158890 -1000
+--- snvec-3.7.5.c.orig	2024-12-11 15:37:02.706494546 -1000
++++ snvec-3.7.5.c	2024-12-11 15:37:28.296974784 -1000
 @@ -422,7 +422,7 @@
  {
  int i,k,m,lt;	
  double t0,tfin,tfink,sckx,*nv,*y0,*u,*up,*epl,*phi,tmp,**nni,dx;
 -double *eei,*inci,*lphi,*lphu,*lani,*lanu,*cp;
-+double *eei,*inci,*lphi,*lphu,*lani,*lanu,*varpi,*omegabar,*cp;
++double *eei,*inci,*lphi,*lphu,*lani,*lanu,*cp,*lpx;
  double argd[4],tend,ed,td;
  char dir[BUFSIZ],foo[BUFSIZ],mssg[BUFSIZ];
  FILE *fpout;
-@@ -515,6 +515,8 @@
- lani = dvector(1,kmax);
+@@ -516,6 +516,7 @@
  lphu = dvector(1,ls);   /* 1,ls! lphu = unwrap(lph) */
  lanu = dvector(1,ls);   /* 1,ls! lanu = unwrap(lan) */
-+varpi = dvector(1,kmax); /* longitude of perihelion */
-+omegabar = dvector(1,kmax); /* longitude of perihelion with respect to the ascending node */
  cp   = dvector(1,kmax); /* climatic precession      */
++lpx  = dvector(1,kmax); /* longitude of perihelion from the moving equinox */
  
  /* start values */
-@@ -588,7 +590,9 @@
+ for(k=1;k<=3;k++)
+@@ -588,7 +589,8 @@
  tmp = phi[1];	
  for(i=1;i<=kount;i++){
    phi[i] -= tmp;
 -   cp[i]  = eei[i]*sin((lphi[i]+OMT)/R2D - phi[i]);
-+  varpi[i] = (lphi[i]+OMT)/R2D;
-+  omegabar[i] = varpi[i] - phi[i];
-+   cp[i]  = eei[i]*sin(omegabar[i]);
++  lpx[i] = (lphi[i]+OMT)/R2D - phi[i];
++   cp[i]  = eei[i]*sin(lpx[i]);
  }
  
  printf("\n@ Final values obliquity, precession (rad):\n");
-@@ -605,10 +609,11 @@
+@@ -605,9 +607,10 @@
   for(k=1;k<=NEQ;k++)
    fprintf(fpout,frmt,yy[k][i]);
   }
@@ -37,8 +35,15 @@
 + fprintf(fpout,frmt,eei[i]);
   fprintf(fpout,frmt,epl[i]);
   fprintf(fpout,frmt,phi[i]);
++ fprintf(fpout,frmt,lpx[i]);
   fprintf(fpout,frmt,cp[i]);
-+ fprintf(fpout,frmt,omegabar[i]);
   //fprintf(fpout,frmt,lani[i]);
   fprintf(fpout,"\n");
- }
+@@ -657,6 +660,7 @@
+ free_dvector(lani,1,kmax);
+ free_dvector(lphu,1,ls);
+ free_dvector(lanu,1,ls);
++free_dvector(lpx,1,kmax);
+ free_dvector(cp,1,kmax);
+ 
+ printf("\n@ All done, exiting to system.\n");

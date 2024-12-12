@@ -24,31 +24,33 @@ snvec/snvec.x: snvec/snvec-3.7.5.c
 out.dat: snvec/snvec.x
 	./snvec/snvec.x -1e5 1 1 . ems-plan3.dat
 
-! TODO: make this write to the ins.dat file
 ins.dat: out.dat paleoinsolation.f90.o
 	./paleoinsolation.f90.o
 
 # one program file
-paleoinsolation.f90.o: paleoinsolation.f90 readdata.f90.o insolation.f90.o
+paleoinsolation.f90.o: paleoinsolation.f90 kind.f90.o data.f90.o insolation.f90.o 
 	gfortran -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 
-# two module files
+# several module files
+kind.f90.o: kind.f90
+	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
+
 # this also creates insol.mod
 # TODO: make this a result
-insolation.f90.o: insolation.f90
+insolation.f90.o: insolation.f90 kind.f90.o
 	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 
 # this also creates data.mod
 # TODO: make this a result
-readdata.f90.o: readdata.f90
+data.f90.o: data.f90 kind.f90.o
 	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 
-
 clean:
-	# -rm 'ems-plan3.dat'
-	# -rm -rf 'snvec'
-	# -rm 'out.bin'
-	# -rm 'out.dat'
+	-rm 'ems-plan3.dat'
+	-rm -rf 'snvec'
+	-rm 'snvec_clone'
+	-rm 'out.bin'
+	-rm 'out.dat'
+	-rm 'ins.dat'
 	-rm *.f90.o
-	-rm data.mod
-	-rm insol.mod
+	-rm *.mod

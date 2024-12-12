@@ -1,27 +1,30 @@
 module insol
+  use kind
   implicit none
 contains
 
-real elemental function insolation(ecc, obl, lpx, long, lat, Sz) result(ins)
-  real, intent(in) :: ecc, obl, lpx
-!!$  real, dimension(249481), intent(in) :: ecc, obl, lpx
-  real, intent(in) :: long, lat, Sz
-  real :: pi, lpxrot, nu, rho, sindelta, cosdelta, sinlatsindelta, coslatcosdelta, cosHz, sinHz, Hz
+real(dp) elemental function insolation(ecc, obl, omegabar, long, lat, Sz) result(ins)
 
-  lpxrot = mod(lpx - pi, 2. * pi)
+  real(dp), intent(in) :: ecc, obl, omegabar
+  real(dp), intent(in) :: long, lat, Sz
+  real(dp) :: pi, nu, rho, sindelta, cosdelta, sinlatsindelta, coslatcosdelta, cosHz, sinHz, Hz
 
-  nu = long - lpxrot
-  rho = (1 - ecc**2) / (1 + ecc * cos(nu))
+  pi = 3.1415926535897932
+
+  nu = long - omegabar ! true anomaly
+  rho = (1._dp - ecc**2._dp) / (1._dp + ecc * cos(nu))
   sindelta = sin(obl) * sin(long)
-  cosdelta = sqrt(1 - sindelta**2)
+  cosdelta = sqrt(1._dp - sindelta**2._dp)
   sinlatsindelta = sin(lat) * sindelta
   coslatcosdelta = cos(lat) * cosdelta
 
-  ! if is.null(H)
-  cosHz = min(max(-1., -sinlatsindelta / coslatcosdelta), 1.)
-  sinHz = sqrt(1. - cosHz**2.)
+  ! if is.null(H) ! for now just default
+  ! palinsol::Insol uses pmin, pmax here
+  ! but because we're using elemental, that shouldn't matter?
+  cosHz = min(max(-1._dp, -sinlatsindelta / coslatcosdelta), 1._dp)
+  sinHz = sqrt(1._dp - cosHz**2._dp)
   Hz = acos(cosHz)
-  ins = Sz / (pi * rho**2.)
+  ins = Sz / (pi * rho**2._dp) * (Hz * sinlatsindelta + coslatcosdelta * sinHz)
 
 end function insolation
 
