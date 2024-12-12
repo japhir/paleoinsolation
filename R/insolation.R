@@ -2,15 +2,15 @@
 #' Insolation
 #'
 # #' @param solution Result of prep_solution(). A dataframe with columns ecc, varpi, epl.
-#' @param eccentricity The eccentricity.
-#' @param obliquity The axial tilt.
-#' @param omegabar The longitude of perihelion from the moving equinox \eqn{omega}{\bar{\omega}}.
+#' @param eccentricity The eccentricity. \eqn{e}
+#' @param obliquity The axial tilt. \eqn{\epsilon}
+#' @param lpx The longitude of perihelion from the moving equinox \eqn{omega}{\bar{\omega}}.
 #' @param longitude True solar longitude (rad). Defaults to June solstice pi/2.
 #' @param latitude Latitude on Earth (rad). Defaults to 65 degrees North.
-#' @param S0 Total solar irradiance (W m^-2). Defaults to 1365 W/m^2.
+#' @param S0 Total solar irradiance (W m^-2). Defaults to 1361 W/m^2.
 #' @param H Sun hour angle (rad). Daily mean by default (NULL).
 insolation <- function(#solution, # result of prep_solution
-                       eccentricity, obliquity, omegabar,
+                       eccentricity, obliquity, lpx,
                        longitude = pi / 2,
                        latitude = 65 * pi / 180,
                        S0 = 1361, # different from palinsol 1365!
@@ -25,7 +25,7 @@ insolation <- function(#solution, # result of prep_solution
   ## for (i in names(solution)) {
   ##   assign(i, solution[[i]])
   ## }
-  nu <- longitude - omegabar # true anomaly
+  nu <- longitude - lpx # true anomaly
   rho <- (1 - eccentricity^2) / (1 + eccentricity * cos(nu))
   sindelta <- sin(obliquity) * sin(longitude)
   cosdelta <- sqrt(1 - sindelta^2)
