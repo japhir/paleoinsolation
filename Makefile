@@ -35,13 +35,9 @@ paleoinsolation.f90.o: paleoinsolation.f90 kind.f90.o data.f90.o insolation.f90.
 kind.f90.o: kind.f90
 	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 
-# this also creates insol.mod
-# TODO: make this a result
 insolation.f90.o: insolation.f90 kind.f90.o
 	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 
-# this also creates data.mod
-# TODO: make this a result
 data.f90.o: data.f90 kind.f90.o
 	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 

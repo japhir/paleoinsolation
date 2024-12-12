@@ -4,7 +4,7 @@ program paleoinsolation
   use kind
   implicit none
 
-  real(dp), dimension(249481) :: time, ecc, obl, prec, climprec, lpx
+  real(dp), dimension(249481) :: time, ecc, obl, prec, lpx, climprec
   real(dp) :: long, lat, Sz
 
   real(dp) :: pi
@@ -12,7 +12,7 @@ program paleoinsolation
 
   real(dp), dimension(249481) :: sixtyfive ! 65°N summer insolation
 
-  pi = 3.1415926535897932
+  pi = 3.1415926535897932_dp
   OMT = 75.594_dp
   R2D = 180._dp / pi
 

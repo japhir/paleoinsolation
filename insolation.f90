@@ -3,15 +3,15 @@ module insol
   implicit none
 contains
 
-real(dp) elemental function insolation(ecc, obl, omegabar, long, lat, Sz) result(ins)
+real(dp) elemental function insolation(ecc, obl, lpx, long, lat, Sz) result(ins)
 
-  real(dp), intent(in) :: ecc, obl, omegabar
+  real(dp), intent(in) :: ecc, obl, lpx
   real(dp), intent(in) :: long, lat, Sz
   real(dp) :: pi, nu, rho, sindelta, cosdelta, sinlatsindelta, coslatcosdelta, cosHz, sinHz, Hz
 
   pi = 3.1415926535897932
 
-  nu = long - omegabar ! true anomaly
+  nu = long - lpx ! true anomaly
   rho = (1._dp - ecc**2._dp) / (1._dp + ecc * cos(nu))
   sindelta = sin(obl) * sin(long)
   cosdelta = sqrt(1._dp - sindelta**2._dp)
