@@ -1,30 +1,115 @@
+!> The paleoinsolation program makes recent astronomical solutions
+!> readily available for use in palaeoclimate simulations, such as the CESM.
+!>
+!> the Makefile:
+!> downloads the astronomical solution ZB18a to ems-plan3.dat
+!> available on https://www.soest.hawaii.edu/oceanography/faculty/zeebe_files/Astro.html
+!> downloads, patches, and compiles the snvec c-program
+!> https://github.com/rezeebe/snvec
+!> calculates the PT-solution with Ed = 1 and Td = 1, resulting in out.dat
+!> compiles this program and runs it to generate ins.dat for 65°N summer insolation
+!> we also show how to linearly interpolate our astronomical solutions
+!> and how to generate a grid of Solar longitudes, Earth latitudes
 program paleoinsolation
-  use data
-  use insol
-  use kind
+  use kind, only : dp
+  use data, only : readdata, writedata
+  use interp, only : orbpar
+  use insol, only : insolation
   implicit none
 
-  real(dp), dimension(249481) :: time, ecc, obl, prec, lpx, climprec
-  real(dp) :: long, lat, Sz
-
+  ! some constants
   real(dp) :: pi
   real(dp) :: OMT, R2D
 
-  real(dp), dimension(249481) :: sixtyfive ! 65°N summer insolation
+  ! the variables that hold ZB18a(1,1) input
+  real(dp), allocatable :: time(:), ecc(:), obl(:), prec(:), lpx(:), climprec(:)
+  ! 65°N summer insolation output
+  real(dp), allocatable :: sixtyfive(:)
+  ! a grid of lat/lon to hold insolation
+  real(dp), allocatable :: latlons(:,:,:)
+  ! the length of time(:) etc.
+  integer :: n
+  ! desired true Solar longitude, Earth's latitude, Solar constant
+  real(dp) :: long, lat, S0
 
-  pi = 3.1415926535897932_dp
+  ! get orbital parameters at a specific calendar year
+  real(dp) :: yearBP
+  real(dp) :: yearCE
+  ! output a single value in radians
+  real(dp) :: ecc1, obl1, lpx1
+  ! also in degrees
+  real(dp) :: obl1_deg, lpx1_deg
+
+  ! desired grid of Solar longitudes and Earth's latitudes to calcualte insolation for
+  integer :: i, j
+  real(dp), dimension(5) :: longs
+  real(dp), dimension(7) :: lats
+
+  ! pi = 3.1415926535897932_dp
+  pi = 4.0_dp*datan(1.0_dp)
   OMT = 75.594_dp
-  R2D = 180._dp / pi
+  R2D = 180._dp / pi ! radians to degrees
 
+  ! the readdata function also allocates these variables
   call readdata(time, ecc, obl, prec, lpx, climprec)
+  print *, 'read snvec ZB18a(1,1) astronomical solution from file out.dat'
+  ! re-wrap LPX (it was 'unwrapped' to prevent numerical glitches near the 2 pi jumps)
   lpx = modulo(lpx - pi, 2._dp * pi)
+  ! print *, 'wrapped LPX'
 
-  ! call insolation with default 65°N summer insolation
+  ! interpolate astronomical solution to a single calendar year
+  ! set desired year
+  ! yearBP = -800000.0_dp ! i.e. -8 Ma = 8 Myr into the future, should throw
+  ! yearBP = 101000000.0_dp ! i.e. 101 Ma , should throw because we're using 100-0 Ma input solution
+  ! yearBP = 800000.0_dp ! i.e. 8 Ma
+  yearBP = 66000000.0_dp ! i.e. 66 Ma
+  yearCE = yearBP + 1950.0_dp
+  call orbpar(yearCE,ecc1,obl1,lpx1)
+  print *,'linearly interpolated astronomical solution at ',yearBP*1.0e-6_dp,' Ma'
+  ! convert from radians to degrees
+  obl1_deg = obl1 * R2D
+  lpx1_deg = lpx1 * R2D
+  print *, 'orbpar(8 Ma)'
+  print *, 'eccentricity: ', ecc1
+  print *, 'obliquity: ', obl1_deg
+  print *, 'longitude of perihelion w/ respect to moving equinox: ', lpx1_deg
+
+  ! calculate 65°N summer insolation for all timesteps in the astronomical solution
   long = pi / 2._dp
   lat = 65._dp / R2D !pi / 180._dp
-  Sz = 1361._dp
+  S0 = 1361._dp ! the input total insolation
 
-  sixtyfive = insolation(ecc, obl, lpx, long, lat, Sz)
+  allocate(sixtyfive(n))
+  sixtyfive = insolation(ecc, obl, lpx, long, lat, S0)
+  print *, 'calculated 65°N summer insolation'
   call writedata(time,ecc,obl,prec,lpx,climprec,sixtyfive)
+  print *, 'wrote 65°N summer insolation to file ins.dat'
+
+  ! calculate insolation for a grid of latitudes and longitudes
+  ! this is how we can use it for multiple longitudes and latitudes
+  longs = [0._dp, pi / 2._dp, pi, 1.5_dp * pi, 2._dp * pi]
+  lats = [-90._dp, -60._dp, -30._dp, 0._dp, 30._dp, 60._dp, 90._dp] / R2D
+
+  n=size(time)
+  ! for all the timesteps in the astronomical solution
+  allocate(latlons(n, 5, 7))
+  do i = 1, 5
+     do j = 1, 7
+        latlons(:,i,j) = insolation(ecc, obl, lpx, longs(i), lats(j), S0)
+     end do
+  end do
+  print *, 'calculated insolation at a grid of solar longitudes and Earth’s latitudes'
+
+  !> write only the insolation at t0 to file as a matrix
+  open(unit=44, file='insgrid.dat')
+  do j=1, 7
+        write(44,*) latlons(1,1,j), latlons(1,2,j), latlons(1,3,j), latlons(1,4,j), latlons(1,5,j)
+  enddo
+  close(44)
+  print *, 'wrote the grid of insolation at t0 to insgrid.dat'
+
+  ! TODO: write this to a netCDF file instead?
+
+  deallocate(time, ecc, obl, prec, lpx, climprec, sixtyfive, latlons)
 
 end program paleoinsolation

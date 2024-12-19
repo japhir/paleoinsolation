@@ -1,8 +1,12 @@
+!> Calculate Insolation.
 module insol
-  use kind
+  use kind, only : dp
   implicit none
+  public
+
 contains
 
+!> Calculate Insolation at the top of the Atmosphere
 real(dp) elemental function insolation(ecc, obl, lpx, long, lat, Sz) result(ins)
 
   real(dp), intent(in) :: ecc, obl, lpx

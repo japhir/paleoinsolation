@@ -5,6 +5,7 @@ all: solution runsnvec insolation
 
 solution: ems-plan3.dat
 runsnvec: out.dat
+orbpars: orb.dat
 insolation: ins.dat
 
 
@@ -28,25 +29,28 @@ ins.dat: out.dat paleoinsolation.f90.o
 	./paleoinsolation.f90.o
 
 # one program file
-paleoinsolation.f90.o: paleoinsolation.f90 kind.f90.o data.f90.o insolation.f90.o 
+paleoinsolation.f90.o: paleoinsolation.f90 kind.f90.o data.f90.o interp.f90.o insolation.f90.o 
 	gfortran -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 
 # several module files
 kind.f90.o: kind.f90
 	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 
-insolation.f90.o: insolation.f90 kind.f90.o
-	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
-
 data.f90.o: data.f90 kind.f90.o
 	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 
+interp.f90.o: interp.f90 kind.f90.o data.f90.o
+	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
+
+insolation.f90.o: insolation.f90 kind.f90.o
+	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
+
 clean:
-	-rm 'ems-plan3.dat'
-	-rm -rf 'snvec'
-	-rm 'snvec_clone'
-	-rm 'out.bin'
-	-rm 'out.dat'
+	#-rm 'ems-plan3.dat'
+	#-rm -rf 'snvec'
+	#-rm 'snvec_clone'
+	#-rm 'out.bin'
+	#-rm 'out.dat'
 	-rm 'ins.dat'
 	-rm *.f90.o
 	-rm *.mod
