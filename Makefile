@@ -29,13 +29,34 @@ ins.dat: out.dat paleoinsolation.f90.o
 	./paleoinsolation.f90.o
 
 # one program file
-paleoinsolation.f90.o: paleoinsolation.f90 kind.f90.o data.f90.o interp.f90.o insolation.f90.o 
+paleoinsolation.f90.o: paleoinsolation.f90 kind.f90.o data.f90.o interp.f90.o insolation.f90.o shr_kind_mod.f90.o shr_const_mod.f90.o shr_log_mod.f90.o shr_orb_mod.f90.o 
 	gfortran -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 
-# several module files
+# my kind function defines a dp type according to best practices
 kind.f90.o: kind.f90
 	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 
+# module files from CDEPS to improve interop
+shr_kind_mod.f90.o: shr_kind_mod.F90
+	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
+
+# for some reason this is not compiling a .mod file...
+#shr_infnan_mod.f90.o: shr_infnan_mod.F90.in
+#	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
+
+#shr_strconvert_mod.f90.o: shr_strconvert_mod.F90 shr_infnan_mod.f90.o
+#	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
+
+shr_log_mod.f90.o: shr_log_mod.F90 shr_kind_mod.f90.o
+	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
+ 
+shr_const_mod.f90.o: shr_const_mod.F90 shr_kind_mod.f90.o
+	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
+
+shr_orb_mod.f90.o: shr_orb_mod.F90 shr_kind_mod.f90.o shr_const_mod.f90.o shr_log_mod.f90.o data.f90.o interp.f90.o
+	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
+
+# my own functions
 data.f90.o: data.f90 kind.f90.o
 	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 

@@ -15,6 +15,8 @@ program paleoinsolation
   use data, only : readdata, writedata
   use interp, only : orbpar
   use insol, only : insolation
+  use shr_kind_mod, only : SHR_KIND_R8, SHR_KIND_IN
+  use shr_orb_mod, only : shr_orb_params, SHR_ORB_UNDEF_INT
   implicit none
 
   ! some constants
@@ -39,6 +41,9 @@ program paleoinsolation
   real(dp) :: ecc1, obl1, lpx1
   ! also in degrees
   real(dp) :: obl1_deg, lpx1_deg
+
+  integer(SHR_KIND_IN) :: iyear_AD
+  real(SHR_KIND_R8) :: eccen, obliq, mvelp, obliqr, lambm0, mvelpp
 
   ! desired grid of Solar longitudes and Earth's latitudes to calcualte insolation for
   integer :: i, j
@@ -66,13 +71,39 @@ program paleoinsolation
   yearCE = yearBP + 1950.0_dp
   call orbpar(yearCE,ecc1,obl1,lpx1)
   print *,'linearly interpolated astronomical solution at ',yearBP*1.0e-6_dp,' Ma'
+  print *,'using orbpar'
   ! convert from radians to degrees
   obl1_deg = obl1 * R2D
   lpx1_deg = lpx1 * R2D
-  print *, 'orbpar(8 Ma)'
   print *, 'eccentricity: ', ecc1
   print *, 'obliquity: ', obl1_deg
   print *, 'longitude of perihelion w/ respect to moving equinox: ', lpx1_deg
+
+  ! same but implemented with the ESCOMP/CDEPS API
+  iyear_AD = yearBP + 1950_SHR_KIND_IN
+  call shr_orb_params(iyear_AD,eccen,obliq,mvelp,obliqr,lambm0,mvelpp,.true.) ! the thing that does the work
+  print *,'linearly interpolated astronomical solution at ',yearBP*1.0e-6_dp,' Ma'
+  print *,'using shr_orb_params'
+  print *, 'eccen: ', eccen
+  print *, 'obliq: ', obliq
+  print *, 'mvelp: ', mvelp
+  print *, 'obliqr: ', obliqr
+  print *, 'lambm0: ', lambm0
+  print *, 'mvelpp: ', mvelpp
+
+  ! a check to see that it still returns correct values
+  iyear_AD = SHR_ORB_UNDEF_INT
+  eccen = 0.0255_SHR_KIND_R8
+  obliq = 23.52866_SHR_KIND_R8
+  mvelp = 223.677_SHR_KIND_R8
+  call shr_orb_params(iyear_AD, eccen, obliq, mvelp,obliqr,lambm0,mvelpp,.true.)
+  print *,'test if shr_orb_params works with pre-set values'
+  print *, 'eccen: (0.0255) = ', eccen
+  print *, 'obliq: (23.52866) = ', obliq
+  print *, 'mvelp: (223.677) = ', mvelp
+  print *, 'obliqr: ', obliqr
+  print *, 'lambm0: ', lambm0
+  print *, 'mvelpp: ', mvelpp
 
   ! calculate 65°N summer insolation for all timesteps in the astronomical solution
   long = pi / 2._dp
@@ -81,7 +112,7 @@ program paleoinsolation
 
   allocate(sixtyfive(n))
   sixtyfive = insolation(ecc, obl, lpx, long, lat, S0)
-  print *, 'calculated 65°N summer insolation'
+  print *, 'calculated 65°N summer insolation at all timesteps in astronomical solution'
   call writedata(time,ecc,obl,prec,lpx,climprec,sixtyfive)
   print *, 'wrote 65°N summer insolation to file ins.dat'
 
@@ -98,7 +129,7 @@ program paleoinsolation
         latlons(:,i,j) = insolation(ecc, obl, lpx, longs(i), lats(j), S0)
      end do
   end do
-  print *, 'calculated insolation at a grid of solar longitudes and Earth’s latitudes'
+  print *, 'calculated insolation at a grid of solar longitudes and Earth’s latitudes for all timesteps in astronomical solution'
 
   !> write only the insolation at t0 to file as a matrix
   open(unit=44, file='insgrid.dat')
