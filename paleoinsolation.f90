@@ -20,8 +20,11 @@ program paleoinsolation
   implicit none
 
   ! some constants
-  real(dp) :: pi
-  real(dp) :: OMT, R2D
+  ! pi = 3.1415926535897932_dp
+  real(dp), parameter :: pi = 4.0_dp*datan(1.0_dp)
+  real(dp), parameter :: OMT = 75.594_dp
+  real(dp), parameter :: R2D = 180._dp / pi ! radians to degrees
+
 
   ! the variables that hold ZB18a(1,1) input
   real(dp), allocatable :: time(:), ecc(:), obl(:), prec(:), lpx(:), climprec(:)
@@ -49,11 +52,6 @@ program paleoinsolation
   integer :: i, j
   real(dp), dimension(5) :: longs
   real(dp), dimension(7) :: lats
-
-  ! pi = 3.1415926535897932_dp
-  pi = 4.0_dp*datan(1.0_dp)
-  OMT = 75.594_dp
-  R2D = 180._dp / pi ! radians to degrees
 
   ! the readdata function also allocates these variables
   call readdata(time, ecc, obl, prec, lpx, climprec)
