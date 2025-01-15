@@ -4,7 +4,7 @@
 # #' @param solution Result of prep_solution(). A dataframe with columns ecc, varpi, epl.
 #' @param eccentricity The eccentricity. \eqn{e}
 #' @param obliquity The axial tilt. \eqn{\epsilon}
-#' @param lpx The longitude of perihelion from the moving equinox \eqn{omega}{\bar{\omega}}.
+#' @param lpx The longitude of perihelion from the moving equinox \eqn{bar omega}{\bar{\omega}}.
 #' @param longitude True solar longitude (rad). Defaults to June solstice pi/2.
 #' @param latitude Latitude on Earth (rad). Defaults to 65 degrees North.
 #' @param S0 Total solar irradiance (W m^-2). Defaults to 1361 W/m^2.

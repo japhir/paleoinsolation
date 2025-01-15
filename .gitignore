@@ -7,3 +7,6 @@
 /snvec/
 /snvec_clone
 /.Rhistory
+/imgs/*.png
+/imgs/*.gif
+/imgs/*.mp4

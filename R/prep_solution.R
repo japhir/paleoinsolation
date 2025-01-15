@@ -1,14 +1,14 @@
-prep_solution <- function(orbital_solution = "full-ZB18a", tend = -10e3, ed = 1, td = 1) {
+prep_solution <- function(orbital_solution = "full-ZB18a", tend = -10e3, ed = 1, td = 1, tres = -0.4) {
   R2D <- 180.0 / pi
   OMT <- 75.5940
-  refsln <- snvecR::snvec(tend, ed, td, orbital_solution, output = "all") |>
+  refsln <- snvecR::snvec(tend, ed, td, orbital_solution, output = "all", tres = tres) |>
     dplyr::mutate(time = time * 1e3) |> # time in years so it's compatible with older stuff
     # is it omegabar or varpi* or varpi???
     # ber78 says 'varpi' true solar longitude of perihelion
     # so should just be lph ?
     # omegabar = varpi + | phi |
     # so varpi = lphui + OMT => rewrapped
-    dplyr::mutate(varpi = (lphi + OMT) / R2D) |>
+    dplyr::mutate(varpi = (lphui + OMT) / R2D) |>
     dplyr::mutate(lpx_0 = varpi - phi) |> # what snvec does
     ## mutate(omegabar = varpi + abs(phi)) |> # what it says on the tin
     # crucifix calls omegabar or pibar varpi
