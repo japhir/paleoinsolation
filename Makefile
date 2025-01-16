@@ -29,14 +29,34 @@ ins.dat: out.dat paleoinsolation.f90.o
 	./paleoinsolation.f90.o
 
 # one program file
-paleoinsolation.f90.o: paleoinsolation.f90 kind.f90.o data.f90.o interp.f90.o insolation.f90.o shr_kind_mod.f90.o shr_const_mod.f90.o shr_log_mod.f90.o shr_orb_mod.f90.o 
+paleoinsolation.f90.o: paleoinsolation.f90 kind.f90.o data.f90.o interp.f90.o orb.f90.o insolation.f90.o shr_kind_mod.f90.o shr_const_mod.f90.o shr_log_mod.f90.o shr_orb_mod.f90.o 
 	gfortran -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 
 # my kind function defines a dp type according to best practices
 kind.f90.o: kind.f90
 	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 
-# module files from CDEPS to improve interop
+# my own functions
+# readdata and writedata
+data.f90.o: data.f90 kind.f90.o
+	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
+
+# the locate function
+interp.f90.o: interp.f90 kind.f90.o
+	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
+
+# calculate insolation from orbital parameters
+insolation.f90.o: insolation.f90 kind.f90.o
+	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
+
+# functions that could be embedded into other packages:
+
+# drop-in replacement for shr_orb_params in CDEPS
+# https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90#L236
+shr_orb_mod.f90.o: shr_orb_mod.F90 shr_kind_mod.f90.o shr_const_mod.f90.o shr_log_mod.f90.o data.f90.o interp.f90.o
+	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
+
+# module dependencies for CDEPS
 shr_kind_mod.f90.o: shr_kind_mod.F90
 	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 
@@ -53,17 +73,10 @@ shr_log_mod.f90.o: shr_log_mod.F90 shr_kind_mod.f90.o
 shr_const_mod.f90.o: shr_const_mod.F90 shr_kind_mod.f90.o
 	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 
-shr_orb_mod.f90.o: shr_orb_mod.F90 shr_kind_mod.f90.o shr_const_mod.f90.o shr_log_mod.f90.o data.f90.o interp.f90.o
-	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 
-# my own functions
-data.f90.o: data.f90 kind.f90.o
-	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
-
-interp.f90.o: interp.f90 kind.f90.o data.f90.o
-	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
-
-insolation.f90.o: insolation.f90 kind.f90.o
+# drop-in replacement for orbpar in paleoToolkit
+# https://github.com/CESM-Development/paleoToolkit/blob/master/PaleoCalAdjust/f90/modules/GISS_orbpar_subs.f90
+orb.f90.o: orb.f90 kind.f90.o data.f90.o interp.f90.o
 	gfortran -c -std=f2008 -ffree-form -g -fcheck=bounds -o $@ $^
 
 clean:

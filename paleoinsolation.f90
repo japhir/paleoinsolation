@@ -13,7 +13,7 @@
 program paleoinsolation
   use kind, only : dp
   use data, only : readdata, writedata
-  use interp, only : orbpar
+  use orb, only : orbpar
   use insol, only : insolation
   use shr_kind_mod, only : SHR_KIND_R8, SHR_KIND_IN
   use shr_orb_mod, only : shr_orb_params, SHR_ORB_UNDEF_INT
@@ -62,14 +62,14 @@ program paleoinsolation
 
   ! interpolate astronomical solution to a single calendar year
   ! set desired year
-  ! yearBP = -800000.0_dp ! i.e. -8 Ma = 8 Myr into the future, should throw
-  ! yearBP = 101000000.0_dp ! i.e. 101 Ma , should throw because we're using 100-0 Ma input solution
-  ! yearBP = 800000.0_dp ! i.e. 8 Ma
-  yearBP = 66000000.0_dp ! i.e. 66 Ma
+  !yearBP =    -800000.0_dp ! i.e. -8 Ma = 8 kyr into the future, should throw
+  !yearBP =  101000000.0_dp ! i.e. 101 Ma , should throw because we're using 100-0 Ma input solution
+  !yearBP =     800000.0_dp ! i.e. 8 ka
+  yearBP =   66000000.0_dp ! i.e. 66 Ma should warn
   yearCE = yearBP + 1950.0_dp
+  print *,'using orbpar'
   call orbpar(yearCE,ecc1,obl1,lpx1)
   print *,'linearly interpolated astronomical solution at ',yearBP*1.0e-6_dp,' Ma'
-  print *,'using orbpar'
   ! convert from radians to degrees
   obl1_deg = obl1 * R2D
   lpx1_deg = lpx1 * R2D

@@ -50,8 +50,7 @@ subroutine shr_orb_params( iyear_AD, eccen, obliq, mvelp, &
   !
   ! made easily available in this code in
   !
-  ! Kocken, I. J. & Zeebe, R. E. (2025) Making Recent Astronomical Solutions Available
-  ! for Climate Simulations.
+  ! Kocken, I. J. & Zeebe, R. E. (2025) New Insolation Forcing for Paleoclimate Models
   !
   !------------------------------Code history-------------------------------------
   !
@@ -154,12 +153,16 @@ subroutine shr_orb_params( iyear_AD, eccen, obliq, mvelp, &
        end if
        yb4_1950AD = 1950.0_SHR_KIND_R8 - real(iyear_AD,SHR_KIND_R8)
        if ( yb4_1950AD .lt. -100000000.0_SHR_KIND_R8 )then
-          write(s_logunit,F00) 'orbit only valid for years -100.000.000'
+          write(s_logunit,F00) 'orbit only available for years -100.000.000'
           write(s_logunit,F00) 'Relative to 1950 AD'
+          write(s_logunit,F00) 'ZB18a has been verified with Geological data up to 58 Ma.'
           write(s_logunit,F03) '# of years before 1950: ',yb4_1950AD
           write(s_logunit,F01) 'Year to simulate was  : ',iyear_AD
           error stop
 !!$          call shr_sys_abort(subname//' ERROR: unreasonable year')
+       end if
+       if ( yb4_1950AD .lt. -58000000.0_SHR_KIND_R8)then
+          write(s_logunit,F00) 'Caution: For ZB18a, the interval -100 Myr to -58 Myr is unconstrained due to solar system chaos.'
        end if
 
        ! get orbital solution ZB18a(1,1)
