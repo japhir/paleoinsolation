@@ -11,7 +11,7 @@ We provide Fortran subroutines that calculate insolation and interpolate the ast
 
 [[https://github.com/ESCOMP/CDEPS/tree/main][CDEPS]]: drop-in replacement for the ~shr_orb_params~ subroutine in the [[https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90][shr_orb_mod]] module.
 
-We also provide the [[https://cran.r-project.org/][R]] functions [[file:R/insolation.R][insolation]] (calculates insolation, inspired by [[https://cran.r-project.org/package=palinsol][palinsol]]) and [[file:R/prep_solution.R][prep_solution]] (uses )
+We also provide the [[https://cran.r-project.org/][R]] functions [[file:R/insolation.R][insolation]] (calculates insolation, inspired by [[https://cran.r-project.org/package=palinsol][palinsol]]) and [[file:R/prep_solution.R][prep_solution]] (uses [[https://japhir.github.io/snvecR][snvecR]]).
 
 * Getting Started
 #+begin_src sh
@@ -29,7 +29,7 @@ Contributions are more than welcome! If something doesn't work the way you expec
 
 * See Also
 - [[https://github.com/rezeebe/snvec][snvec]] :: the C-code that calculates climatic precession and obliquity from an astronomical solution and assumptions about tidal dissipation and dynamical ellipticity.
-- [[https://github.com/japhir/snvecR][snvecR]] :: the R-version of the C-code.
+- [[https://japhir.github.io/snvecR][snvecR]] :: an R-implementation of the above C-code.
 - [[https://cran.r-project.org/package=palinsol][palinsol]] :: R package to calculate insolation for the Berger (1978), Berger and Loutre (1991) and Laskar et al. (2004) solutions.
 
 * References
@@ -38,5 +38,4 @@ Zeebe, R. E., & Lourens, L. J. (2019). Solar System chaos and the Paleocene–Eo
 
 Zeebe, R. E., & Lourens, L. J. (2022a). A deep-time dating tool for paleo-applications utilizing obliquity and precession cycles: The role of dynamical ellipticity and tidal dissipation. Paleoceanography and Paleoclimatology, 37 (2), e2021PA004349. doi: [[https://doi.org/10.1029/2021PA004349][10.1029/2021PA004349]]
 
-Zeebe, R. E., & Lourens, L. J. (2022b). Geologically constrained astronomical solutions for the Cenozoic era. Earth and Planetary Science Letters, 592,
-375117595. doi: [[https://doi.org/10.1016/j.epsl.2022.117595][10.1016/j.epsl.2022.117595]]
+Zeebe, R. E., & Lourens, L. J. (2022b). Geologically constrained astronomical solutions for the Cenozoic era. Earth and Planetary Science Letters, 592, 375117595. doi: [[https://doi.org/10.1016/j.epsl.2022.117595][10.1016/j.epsl.2022.117595]]
