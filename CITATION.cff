@@ -1,0 +1,42 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: >-
+  paleoinsolation: New Insolation Forcing for Paleoclimate
+  Models
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Ilja Japhir
+    family-names: Kocken
+    email: ikocken@hawaii.edu
+    affiliation: University of Hawaii at Manoa
+    orcid: 'https://orcid.org/0000-0003-2196-8718'
+identifiers:
+  - type: doi
+    value: 10.1234/zenodo.4321
+    description: Zenodo Archive
+repository-code: 'https://github.com/japhir/paleoinsolation'
+repository-artifact: 'https://zenodo.org/record/7865280'
+abstract: >-
+
+  To facilitate using recent astronomical solutions in
+  General Circulation Models such as the Community Earth
+  System Model, we make the ZB18a and ZB20a orbital
+  solutions readily available.
+keywords:
+  - paleoinsolation
+  - palaeoinsolation
+  - insolation
+  - Fortran
+  - climate model
+  - CESM
+  - astronomical forcing
+  - Milanković
+  - Milankovitch
+  - R
+  - GCM
+license: GPL-3.0-or-later
