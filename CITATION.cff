@@ -25,7 +25,7 @@ abstract: >-
 
   To facilitate using recent astronomical solutions in
   General Circulation Models such as the Community Earth
-  System Model, we make the ZB18a and ZB20a orbital
+  System Model, we make the ZB18a and ZB20a astronomical
   solutions readily available.
 keywords:
   - paleoinsolation
