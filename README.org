@@ -1,9 +1,8 @@
 #+title: ~paleoinsolation~: New Insolation Forcing for Paleoclimate Models
 
-To facilitate using recent astronomical solutions in [[https://en.wikipedia.org/wiki/General_circulation_model][GCMs]] such as the [[https://www.cesm.ucar.edu/][CESM]], we make the ZB18a and ZB20a orbital solutions readily available:
+To facilitate using recent astronomical solutions in [[https://en.wikipedia.org/wiki/General_circulation_model][GCMs]] such as the [[https://www.cesm.ucar.edu/][CESM]], we make the ZB18a and ZB20a orbital solutions readily available.
 
 * Overview
-
 We provide a [[file:Makefile]] that downloads the orbital solutions and the [[https://github.com/rezeebe/snvec][snvec C program]], patches snvec to also output the longitude of perihelion, and then compiles and runs snvec for 100 Myr to create the ~ZB18a(1,1)~ and ~ZB20a(1,1)~ solutions (where the numbers in parameters refer to the dynamical ellipticity and the tidal dissipation, respectively).
 
 We provide Fortran subroutines that calculate insolation and interpolate the astronomical parameters to a certain calendar date, and provide drop-in replacements to existing Fortran subroutines from the CESM.
@@ -11,6 +10,8 @@ We provide Fortran subroutines that calculate insolation and interpolate the ast
 [[https://github.com/CESM-Development/paleoToolkit/tree/master/PaleoCalAdjust][PaleoCalAdjust]]: drop-in replacement for [[https://github.com/CESM-Development/paleoToolkit/blob/master/PaleoCalAdjust/f90/modules/GISS_orbpar_subs.f90][subroutine ~GISS_orbpar~]]
 
 [[https://github.com/ESCOMP/CDEPS/tree/main][CDEPS]]: drop-in replacement for the ~shr_orb_params~ subroutine in the [[https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90][~shr_orb_mod~]] module.
+
+We also provide the [[https://cran.r-project.org/][R]] functions [[file:R/insolation.R][~insolation~]] (calculates insolation, inspired by [[https://cran.r-project.org/package=palinsol][~palinsol~]]) and [[file:R/prep_solution.R][~prep_solution~]] (uses )
 
 * Getting Started
 #+begin_src sh
@@ -24,8 +25,12 @@ We provide Fortran subroutines that calculate insolation and interpolate the ast
 #+end_src
 
 * Contributing
-Contributions are welcomed via pull-requests and/or issues.
+Contributions are more than welcome! If something doesn't work the way you expect and you don't know how to fix it, write an issue. If you do know how to fix it, feel free to write a pull request!
 
+* See Also
+- [[https://github.com/rezeebe/snvec][~snvec~]] :: the C-code that calculates climatic precession and obliquity from an astronomical solution and assumptions about tidal dissipation and dynamical ellipticity.
+- [[https://github.com/japhir/snvecR][~snvecR~]] :: the R-version of the C-code.
+- [[https://cran.r-project.org/package=palinsol][~palinsol~]] :: R package to calculate insolation for the Berger (1978), Berger and Loutre (1991) and Laskar et al. (2004) solutions.
 
 * References
 
