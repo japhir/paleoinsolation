@@ -105,8 +105,6 @@ subroutine shr_orb_params( iyear_AD, eccen, obliq, mvelp, &
 
   ! Check for flag to use input orbit parameters
 
-  ! Check for flag to use input orbit parameters
-
     IF ( iyear_AD == SHR_ORB_UNDEF_INT ) THEN
 
        ! Check input obliq, eccen, and mvelp to ensure reasonable
@@ -155,7 +153,7 @@ subroutine shr_orb_params( iyear_AD, eccen, obliq, mvelp, &
        if ( yb4_1950AD .lt. -100000000.0_SHR_KIND_R8 )then
           write(s_logunit,F00) 'orbit only available for years -100.000.000'
           write(s_logunit,F00) 'Relative to 1950 AD'
-          write(s_logunit,F00) 'ZB18a has been verified with Geological data up to 58 Ma.'
+          write(s_logunit,F00) 'ZB18a eccentricity has been verified with Geological data up to 58 Ma.'
           write(s_logunit,F03) '# of years before 1950: ',yb4_1950AD
           write(s_logunit,F01) 'Year to simulate was  : ',iyear_AD
           error stop
