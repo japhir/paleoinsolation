@@ -164,7 +164,7 @@ subroutine shr_orb_params( iyear_AD, eccen, obliq, mvelp, &
        end if
 
        ! get orbital solution ZB18a(1,1)
-       call readdata(times, eccs, obls, precs, lpxs, climprecs)
+       call readdata('dat/PT-ZB18a_1-1.dat', times, eccs, obls, precs, lpxs, climprecs)
        n = size(times)
        ! re-wrap
        lpxs = modulo(lpxs - pi, 2.0_SHR_KIND_R8*pi)

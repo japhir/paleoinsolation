@@ -1,9 +1,11 @@
-/*.dat
-/*.mod
-/*.f90.o
-/*.blend
-/*.blend1
-/*.odt
+*.dat
+*.mod
+*.f90.o
+*.F90.o
+*.exe
+*.blend
+*.blend1
+*.odt
 /out.bin
 /out
 /dat

@@ -54,8 +54,12 @@ program paleoinsolation
   real(dp), dimension(7) :: lats
 
   ! the readdata function also allocates these variables
-  call readdata(time, ecc, obl, prec, lpx, climprec)
-  print *, 'read snvec ZB18a(1,1) astronomical solution from file out.dat'
+  call readdata("dat/PT-ZB18a_1-1.dat", time, ecc, obl, prec, lpx, climprec)
+  print *, 'read snvec ZB18a(1,1) astronomical solution'
+  ! alternatively:
+  ! call readdata('dat/PT-ZB20a(1,1).dat', time, ecc, obl, prec, lpx, climprec)
+  ! print *, 'read snvec ZB20a(1,1) astronomical solution'
+
   ! re-wrap LPX (it was 'unwrapped' to prevent numerical glitches near the 2 pi jumps)
   lpx = modulo(lpx - pi, 2._dp * pi)
   ! print *, 'wrapped LPX'
@@ -66,10 +70,21 @@ program paleoinsolation
   !yearBP =  101000000.0_dp ! i.e. 101 Ma , should throw because we're using 100-0 Ma input solution
   !yearBP =     800000.0_dp ! i.e. 8 ka
   yearBP =   66000000.0_dp ! i.e. 66 Ma should warn
-  yearCE = yearBP + 1950.0_dp
+  yearCE = -yearBP + 1950.0_dp
   print *,'using orbpar'
   call orbpar(yearCE,ecc1,obl1,lpx1)
   print *,'linearly interpolated astronomical solution at ',yearBP*1.0e-6_dp,' Ma'
+  ! convert from radians to degrees
+  obl1_deg = obl1 * R2D
+  lpx1_deg = lpx1 * R2D
+  print *, 'eccentricity: ', ecc1
+  print *, 'obliquity: ', obl1_deg
+  print *, 'longitude of perihelion w/ respect to moving equinox: ', lpx1_deg
+
+  yearCE = 1950
+  print *,'using orbpar'
+  call orbpar(yearCE,ecc1,obl1,lpx1)
+print *,'linearly interpolated astronomical solution at ',yearCE,' CE'
   ! convert from radians to degrees
   obl1_deg = obl1 * R2D
   lpx1_deg = lpx1 * R2D
@@ -106,13 +121,13 @@ program paleoinsolation
   ! calculate 65°N summer insolation for all timesteps in the astronomical solution
   long = pi / 2._dp
   lat = 65._dp / R2D !pi / 180._dp
-  S0 = 1361._dp ! the input total insolation
+  S0 = 1360.7_dp ! the input total insolation
 
   allocate(sixtyfive(n))
   sixtyfive = insolation(ecc, obl, lpx, long, lat, S0)
   print *, 'calculated 65°N summer insolation at all timesteps in astronomical solution'
-  call writedata(time,ecc,obl,prec,lpx,climprec,sixtyfive)
-  print *, 'wrote 65°N summer insolation to file ins.dat'
+  call writedata("dat/ZB18a_insolation.dat", time,ecc,obl,prec,lpx,climprec,sixtyfive)
+  print *, 'wrote 65°N summer insolation to file'
 
   ! calculate insolation for a grid of latitudes and longitudes
   ! this is how we can use it for multiple longitudes and latitudes

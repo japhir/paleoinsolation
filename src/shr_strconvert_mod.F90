@@ -40,9 +40,9 @@ use shr_kind_mod, only: &
      r8 => shr_kind_r8, &
      cs => shr_kind_cs
 
-use shr_infnan_mod, only: &
-     isnan => shr_infnan_isnan
-
+!!$use shr_infnan_mod, only: &
+!!$     isnan => shr_infnan_isnan
+!!$
 implicit none
 private
 

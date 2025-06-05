@@ -43,6 +43,4 @@ integer function locate(xx,x)
   end if
 end function locate
 
-
-
 end module interp
