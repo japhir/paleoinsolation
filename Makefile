@@ -110,10 +110,9 @@ snvec/snvec-3.7.5.c: snvec_clone snvec.patch
 
 # compile snvec
 snvec/snvec.x: snvec/snvec-3.7.5.c
-	gcc -o snvec/snvec.x snvec/snvec-3.7.5.c -lm
+	gcc -std=c99 -o snvec/snvec.x snvec/snvec-3.7.5.c -lm
 
 # download the orbital solution from the web
-
 # this is the 100-Myr version
 # we now also provide the 300 Myr full files,
 # for now embedded in this repo!
@@ -129,11 +128,13 @@ snvec/snvec.x: snvec/snvec-3.7.5.c
 dat/PT-ZB18a_1-1.dat: snvec/snvec.x dat/ZB18a-plan3.dat
 	./snvec/snvec.x -3e5 1 1 'dat' 'ZB18a-plan3.dat'
 	mv 'out.dat' 'dat/PT-ZB18a_1-1.dat'
+	mv 'out.bin' 'dat/PT-ZB18a_1-1.bin'
 
 # run snvec for ZB20a
 dat/PT-ZB20a_1-1.dat: snvec/snvec.x dat/ZB20a-plan3.dat
 	./snvec/snvec.x -3e5 1 1 'dat' 'ZB20a-plan3.dat'
 	mv 'out.dat' 'dat/PT-ZB20a_1-1.dat'
+	mv 'out.bin' 'dat/PT-ZB20a_1-1.bin'
 
 # run example fortran routine to calculate insolation
 dat/ZB18a_insolation.dat: dat/PT-ZB18a_1-1.dat $(paleoinsolation.mod)
