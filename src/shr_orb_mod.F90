@@ -151,7 +151,7 @@ subroutine shr_orb_params( iyear_AD, eccen, obliq, mvelp, &
        end if
        yb4_1950AD = 1950.0_SHR_KIND_R8 - real(iyear_AD,SHR_KIND_R8)
        if ( yb4_1950AD .lt. -100000000.0_SHR_KIND_R8 )then
-          write(s_logunit,F00) 'orbit only available for years -100.000.000'
+          write(s_logunit,F00) 'orbit only available for years -300.000.000'
           write(s_logunit,F00) 'Relative to 1950 AD'
           write(s_logunit,F00) 'ZB18a eccentricity has been verified with Geological data up to 58 Ma.'
           write(s_logunit,F03) '# of years before 1950: ',yb4_1950AD
@@ -160,24 +160,26 @@ subroutine shr_orb_params( iyear_AD, eccen, obliq, mvelp, &
 !!$          call shr_sys_abort(subname//' ERROR: unreasonable year')
        end if
        if ( yb4_1950AD .lt. -58000000.0_SHR_KIND_R8)then
-          write(s_logunit,F00) 'Caution: For ZB18a, the interval -100 Myr to -58 Myr is unconstrained due to solar system chaos.'
+          write(s_logunit,F00) 'Caution: For ZB18a, the interval -300 Myr to -58 Myr is unconstrained due to solar system chaos.'
        end if
 
        ! get orbital solution ZB18a(1,1)
        call readdata('dat/PT-ZB18a_1-1.dat', times, eccs, obls, precs, lpxs, climprecs)
        n = size(times)
-       ! re-wrap
-       lpxs = modulo(lpxs - pi, 2.0_SHR_KIND_R8*pi)
+       ! re-wrap and subtract pi
+!!$       lpxs = modulo(lpxs - pi, 2.0_SHR_KIND_R8*pi)
 
        ! the DE431 ephimerides used for the ZB18a solution
-       ! has t0 = Julian day 2443144.5003725
-       ! this is approximately 1977-01-01 at 00:00:32
-       ! so 0 model years = 1977 CE
-       ! so to convert from CE to model years, subtract 1977
+       ! has t0 = Julian day 2443144.5003725 (Folkner et al., 2014)
+       ! this is approximately 1977-01-01 at 00:00:32 (web tool conversion)
+
+       ! However, Richard has taken care of this by first converting everything
+       ! t0 to J2000.0
        ! also: model years are negative, but yearCE is positive
 
+
        ! this is the model year in kyr for interpolation
-       time_kyr = -(real(iyear_AD,SHR_KIND_R8) - 1977.0_SHR_KIND_R8)*1.0e-3_SHR_KIND_R8
+       time_kyr = (real(iyear_AD,SHR_KIND_R8) - 2000.0_SHR_KIND_R8)*1.0e-3_SHR_KIND_R8
 
        ipos = locate(times,time_kyr)
        if(ipos == -1) then
@@ -196,10 +198,11 @@ subroutine shr_orb_params( iyear_AD, eccen, obliq, mvelp, &
        ! prec = linear_interpolation(times,precs,time_kyr)
        mvelp = lpxs(ipos) + frac * (lpxs(ipos+1) - lpxs(ipos))
 
-       obliq = obliqr * degrad
+       obliq = obliqr / degrad
 
        lambm0 = SHR_ORB_UNDEF_REAL
-       mvelpp = mvelp + pi
+       mvelpp = modulo(mvelp + pi, 2.0_SHR_KIND_R8*pi)
+
 
     END IF
 

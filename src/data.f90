@@ -5,6 +5,7 @@ module data
   private
 
   public :: readdata
+  public :: readbindata
   public :: writedata
 
 contains
@@ -40,17 +41,42 @@ subroutine readdata(pt_solution_file, time, ecc, obl, prec, lpx, climprec)
   close(io)
 end subroutine readdata
 
+subroutine readbindata(pt_solution_file, time, ecc, obl, prec, lpx, climprec)
+    real(dp), intent(out), allocatable :: time(:), ecc(:), obl(:), prec(:), lpx(:), climprec(:)
+    character(len=*), intent(in) :: pt_solution_file
+    ! note that this must be the below Int32 type!
+    integer(4) :: n
+
+
+    ! Read kount as 4-byte integer
+    ! Open the binary file in stream mode
+    open(unit=10, file=pt_solution_file, access='stream', form='unformatted', status='old', action='read')
+    read(10) n
+    allocate(time(n), ecc(n), obl(n), prec(n), lpx(n), climprec(n))
+    ! Read each array
+    read(10) time
+    read(10) ecc
+    read(10) obl
+    read(10) prec
+    read(10) lpx
+    read(10) climprec
+    close(10)
+
+    ! Convert time from days to kyr
+    time = time / 365250.0_dp
+end subroutine readbindata
+
 !> Write output to ins_file
 subroutine writedata(ins_file, time, ecc, obl, prec, lpx, climprec, ins)
   real(dp), intent(in), dimension(:) :: time, ecc, obl, prec, lpx, climprec, ins
-  integer :: io,i,n
+  integer :: i,n
   character(len=*) :: ins_file
   n = size(time)
-  open (unit=io, file=ins_file, status="replace", action="write")
+  open (unit=42, file=ins_file, status="replace", action="write")
   do i=1,n
-     write(io,*) time(i), ecc(i), obl(i), prec(i), lpx(i), climprec(i), ins(i)
+     write(42,*) time(i), ecc(i), obl(i), prec(i), lpx(i), climprec(i), ins(i)
   enddo
-  close(io)
+  close(42)
 end subroutine writedata
 
 end module data
