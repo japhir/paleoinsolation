@@ -52,7 +52,7 @@ subroutine orbpar(yearCE,ecc,obl,lpx)
 
   ! print nice errors if time outside orbital solution is specified
   if((time_kyr .lt. -300.0e3_dp) .or. (time_kyr .gt. 0.0_dp)) then
-     print *, 'ERROR: Orbital solution is provided between 0 and -300 Myr.'
+     print *, 'ERROR: Orbital solution is provided between -300 Myr and 0 Myr.'
      print *, 'time_kyr = ',time_kyr
      error stop
   end if
@@ -80,7 +80,7 @@ subroutine orbpar(yearCE,ecc,obl,lpx)
 
   ! re-wrap
   ! important to do this only at the end!
-!!$  lpx = modulo(lpx - pi, 2.0_dp*pi)
+  lpx = modulo(lpx - pi, 2.0_dp*pi)
 
   ! climprec = linear_interpolation(times,climprec,time_kyr)
 end subroutine orbpar
@@ -115,7 +115,7 @@ subroutine orbinterp(yearCE,ecc,obl,lpx,times,eccs,obls,lpxs)
 
   ! print nice errors if time outside orbital solution is specified
   if((time_kyr .lt. -300.0e3_dp) .or. (time_kyr .gt. 0.0_dp)) then
-     print *, 'ERROR: Orbital solution is provided between 0 and -300 Myr.'
+     print *, 'ERROR: Orbital solution is provided between -300 Myr and 0 Myr.'
      print *, 'time_kyr = ',time_kyr
      error stop
   end if
@@ -141,8 +141,11 @@ subroutine orbinterp(yearCE,ecc,obl,lpx,times,eccs,obls,lpxs)
   ! prec = linear_interpolation(times,precs,time_kyr)
   lpx = lpxs(ipos) + frac * (lpxs(ipos+1) - lpxs(ipos))
   ! climprec = linear_interpolation(times,climprec,time_kyr)
-end subroutine orbinterp
 
+  ! re-wrap
+  ! important to do this only at the end!
+  lpx = modulo(lpx - pi, 2.0_dp*pi)
+end subroutine orbinterp
 
 
 end module orb

@@ -67,15 +67,8 @@ program paleoinsolation
 
   ! note that the longitude of perihelion with respect to the moving equinox is
   ! "unwrapped", in order to prevent interpolation artefacts!
-  ! we postpone re-wrapping it until interpolation is done.
-!!$  lpx = modulo(lpx - pi, 2._dp * pi)
-!!$  ! print *, 'wrapped LPX'
-
-  ! TODO:
-!!$  print *,'--------------------------------------------------------------------------------'
-
-!!$  print *, 'read snvec ZB18a(1,1) astronomical solution from binary file'
-
+  ! furthermore, it is 180° off from what we need for the insolation calculation.
+  ! the functions orbpar and orbinterp take care of this conversion!
 
   print *,'--------------------------------------------------------------------------------'
   print *,'using orbpar'
@@ -98,15 +91,24 @@ program paleoinsolation
 !!$  print *,'linearly interpolated astronomical solution at ',yearBP*1.0e-6_dp,' Ma'
   ! convert from radians to degrees
   obl1_deg = obl1 * R2D
-  ! note the modulo needed here, we MUST do this all the way at the end
-  ! to prevent issues when interpolating!
-  lpx1_deg = modulo(lpx1,2*pi) * R2D
+  lpx1_deg = lpx1 * R2D
   print *, 'eccentricity: ', ecc1, '[-]'
   print *, 'obliquity:    ', obl1_deg, '°'
-  print *, 'longitude of perihelion w/ respect to moving equinox: ', lpx1_deg, '°'
-!!$
+  print *, 'longitude of perihelion w/ respect to moving equinox − 180°: ', lpx1_deg, '°'
 
   print *,'--------------------------------------------------------------------------------'
+  print *,'using orbinterp'
+  call orbinterp(yearCE,ecc1,obl1,lpx1,time,ecc,obl,lpx)
+  print *,'linearly interpolated astronomical solution at ',yearBP,' BP'
+  ! convert from radians to degrees
+  obl1_deg = obl1 * R2D
+  lpx1_deg = lpx1 * R2D
+  print *, 'eccentricity: ', ecc1, '[-]'
+  print *, 'obliquity:    ', obl1_deg, '°'
+  print *, 'longitude of perihelion w/ respect to moving equinox − 180°: ', lpx1_deg, '°'
+
+  print *,'--------------------------------------------------------------------------------'
+
   print *,'using shr_orb_params'
   ! same but implemented with the ESCOMP/CDEPS API
   iyear_AD = yearBP + 2000_SHR_KIND_IN
@@ -141,7 +143,7 @@ program paleoinsolation
   S0 = 1360.7_dp ! the input total insolation
 
   allocate(sixtyfive(n))
-  sixtyfive = insolation(ecc, obl, lpx, long, lat, S0)
+  sixtyfive = insolation(ecc, obl, modulo(lpx - pi, 2.0_dp*pi), long, lat, S0)
   print *, 'calculated 65°N summer insolation at all timesteps in astronomical solution'
   call writedata("dat/ZB18a_insolation.dat", time,ecc,obl,prec,lpx,climprec,sixtyfive)
   print *, 'wrote 65°N summer insolation to file'
@@ -197,26 +199,70 @@ program paleoinsolation
 
   print *, 'interpolating solution for past 40 kyr to check'
   n = 421
+  ! re-use previously allocatable sixtyfive vector
+  deallocate(sixtyfive)
+  allocate(sixtyfive(n))
+
   allocate(interpolate_time(n))
   allocate(interpolate_ecc(n))
   allocate(interpolate_obl(n))
   allocate(interpolate_lpx(n))
   yAD = -40000._dp - 100._dp
   do i=1,n
-!!$     print *, 'yearAD =', yAD+i*100
+     print *, 'yearAD =', yAD+i*100
      interpolate_time(i) = yAD+i*100
      call orbinterp(real(yAD+i*100, kind = 8),interpolate_ecc(i),interpolate_obl(i),interpolate_lpx(i),time,ecc,obl,lpx)
   end do
   print *, 'interpolated to times between', yAD+100, ' and ', yAD+n*100, ' AD, in ', 100, ' yr steps'
-!!$
+  long = pi / 2._dp
+  lat = 65._dp / R2D !pi / 180._dp
+  S0 = 1360.7_dp ! the input total insolation
+  sixtyfive = insolation(interpolate_ecc, interpolate_obl, interpolate_lpx, long, lat, S0)
+
   open(unit=io, file = 'interp_-40000.dat', status="replace", action="write")
   do i=1,n
-     write(io,*) interpolate_time(i), interpolate_ecc(i), interpolate_obl(i), interpolate_lpx(i)
+     write(io,*) interpolate_time(i), interpolate_ecc(i), interpolate_obl(i), modulo(interpolate_lpx(i)-pi,2.0_dp*pi), sixtyfive(i)
   enddo
   close(io)
   print *, 'wrote linearly interpolated orbital forcing to file'
 
   print *,'--------------------------------------------------------------------------------'
+
+  print *, 'interpolating solution from 250 kyr'
+  n = 421
+  ! re-use previously allocatable vectors
+  deallocate(sixtyfive)
+  deallocate(interpolate_time)
+  deallocate(interpolate_ecc)
+  deallocate(interpolate_obl)
+  deallocate(interpolate_lpx)
+
+  allocate(sixtyfive(n))
+  allocate(interpolate_time(n))
+  allocate(interpolate_ecc(n))
+  allocate(interpolate_obl(n))
+  allocate(interpolate_lpx(n))
+  yAD = -250000.0_dp - 100.0_dp
+  do i=1,n
+     print *, 'yearAD =', yAD+i*100
+     interpolate_time(i) = yAD+i*100
+     call orbinterp(real(yAD+i*100, kind = 8),interpolate_ecc(i),interpolate_obl(i),interpolate_lpx(i),time,ecc,obl,lpx)
+  end do
+  print *, 'interpolated to times between', yAD+100, ' and ', yAD+n*100, ' AD, in ', 100, ' yr steps'
+  long = pi / 2._dp
+  lat = 65._dp / R2D !pi / 180._dp
+  S0 = 1360.7_dp ! the input total insolation
+  sixtyfive = insolation(interpolate_ecc, interpolate_obl, interpolate_lpx, long, lat, S0)
+
+  open(unit=io, file = 'interp_-250_-170.dat', status="replace", action="write")
+  do i=1,n
+     write(io,*) interpolate_time(i), interpolate_ecc(i), interpolate_obl(i), modulo(interpolate_lpx(i)-pi,2.0_dp*pi), sixtyfive(i)
+  enddo
+  close(io)
+  print *, 'wrote linearly interpolated orbital forcing to file'
+
+  print *,'--------------------------------------------------------------------------------'
+
   ! calculate insolation for a grid of latitudes and longitudes
   ! this is how we can use it for multiple longitudes and latitudes
   longs = [0._dp, pi / 2._dp, pi, 1.5_dp * pi, 2._dp * pi]
@@ -244,7 +290,7 @@ program paleoinsolation
   print *,'--------------------------------------------------------------------------------'
 
   deallocate(time, ecc, obl, prec, lpx, climprec)
-!!$  deallocate(sixtyfive, latlons)
+  deallocate(sixtyfive, latlons)
   deallocate(interpolate_time, interpolate_ecc, interpolate_obl, interpolate_lpx)
 
 end program paleoinsolation
