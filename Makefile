@@ -146,5 +146,10 @@ clean:
 	#-rm 'ems-plan3.dat'
 	#-rm -rf 'snvec'
 	#-rm 'snvec_clone'
-	$(RM) 'dat/ZB18a_insolation.dat'
+	$(RM) $(TEST_EXE)
+	# $(RM) 'dat/PT-ZB18a_1-1.dat'
+	# $(RM) 'dat/PT-ZB18a_1-1.bin'
+	# $(RM) 'dat/PT-ZB20a_1-1.dat'
+	# $(RM) 'dat/PT-ZB20a_1-1.bin'
+	# $(RM) 'dat/ZB18a_insolation.dat'
 	$(RM) $(filter %.o, $(OBJS)) $(LIB) $(wildcard *.mod)

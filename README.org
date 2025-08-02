@@ -5,11 +5,13 @@ To facilitate using recent astronomical solutions in [[https://en.wikipedia.org/
 * Overview
 We provide a [[file:Makefile][Makefile]] that downloads the orbital solutions and the [[https://github.com/rezeebe/snvec][snvec C program]], [[file:snvec.patch][patches]] snvec to also output the longitude of perihelion, and then compiles and runs snvec for 100 Myr to create the ~ZB18a(1,1)~ and ~ZB20a(1,1)~ solutions (where the numbers in parameters refer to the dynamical ellipticity and the tidal dissipation, respectively).
 
-We provide [[file:insolation.f90][Fortran subroutines]]  that calculate insolation and interpolate the astronomical parameters to a certain calendar date, and provide drop-in replacements to existing Fortran subroutines from the CESM.
+The data files [[file:dat/PT-ZB18a_1-1.dat]] and [[file:dat/PT-ZB20a_1-1.dat]] contain this output in case you would prefer to skip this step. We also provide binary files if you care about preserving disk space and slightly faster reads (which needs to happen only once per run) at [[file:dat/PT-ZB18a_1-1.bin]] and [[file:dat/PT-ZB18a_1-1.bin]].
 
-[[https://github.com/CESM-Development/paleoToolkit/tree/master/PaleoCalAdjust][PaleoCalAdjust]]: drop-in replacement for subroutine [[https://github.com/CESM-Development/paleoToolkit/blob/master/PaleoCalAdjust/f90/modules/GISS_orbpar_subs.f90][GISS_orbpars]] in [[file:orb.f90]].
+We provide [[file:src/insolation.f90][Fortran subroutines]]  that calculate insolation and interpolate the astronomical parameters to a certain calendar date, and provide drop-in replacements to existing Fortran subroutines from the CESM.
 
-[[https://github.com/ESCOMP/CDEPS/tree/main][CDEPS]]: drop-in replacement for the ~shr_orb_params~ subroutine in the [[https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90][shr_orb_mod]] module in [[file:shr_orb_mod.F90]].
+[[https://github.com/CESM-Development/paleoToolkit/tree/master/PaleoCalAdjust][PaleoCalAdjust]]: drop-in replacement for subroutine [[https://github.com/CESM-Development/paleoToolkit/blob/master/PaleoCalAdjust/f90/modules/GISS_orbpar_subs.f90][GISS_orbpars]] in [[file:src/orb.f90]].
+
+[[https://github.com/ESCOMP/CDEPS/tree/main][CDEPS]]: drop-in replacement for the ~shr_orb_params~ subroutine in the [[https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90][shr_orb_mod]] module in [[file:src/shr_orb_mod.F90]].
 
 We also provide the [[https://cran.r-project.org/][R]] functions [[file:R/insolation.R][insolation]] (calculates insolation, inspired by [[https://cran.r-project.org/package=palinsol][palinsol]]) and [[file:R/prep_solution.R][prep_solution]] (uses [[https://japhir.github.io/snvecR][snvecR]]).
 
@@ -24,6 +26,21 @@ We also provide the [[https://cran.r-project.org/][R]] functions [[file:R/insola
   make
 #+end_src
 
+or in case you want to re-run all the steps
+
+#+begin_src sh
+  cd ~/ # or wherever you want to install it
+  # copy the project over
+  git clone 'https://github.com/japhir/paleoinsolation'
+  # enter the new directory
+  cd 'paleoinsolation'
+  # remove the pre-built snvec output files
+  rm dat/PT-ZB{18,20}a_1-1.dat
+  rm dat/PT-ZB{18,20}a_1-1.bin
+  make clean
+  # build and run the fortran program
+  make
+#+end_src
 * Contributing
 Contributions are more than welcome! If something doesn't work the way you expect and you don't know how to fix it, write an issue. If you do know how to fix it, feel free to write a pull request!
 

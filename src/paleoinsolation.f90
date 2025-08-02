@@ -14,7 +14,7 @@
 program paleoinsolation
   use kind, only : dp
   use data, only : readdata, readbindata, writedata
-  use orb, only : orbpar, orbinterp
+  use orb, only : orbpar
   use insol, only : insolation
   use shr_kind_mod, only : SHR_KIND_R8, SHR_KIND_IN
   use shr_orb_mod, only : shr_orb_params, SHR_ORB_UNDEF_INT
@@ -68,7 +68,7 @@ program paleoinsolation
   ! note that the longitude of perihelion with respect to the moving equinox is
   ! "unwrapped", in order to prevent interpolation artefacts!
   ! furthermore, it is 180° off from what we need for the insolation calculation.
-  ! the functions orbpar and orbinterp take care of this conversion!
+  ! the functions orbpar takes care of this conversion!
 
   print *,'--------------------------------------------------------------------------------'
   print *,'using orbpar'
@@ -97,9 +97,9 @@ program paleoinsolation
   print *, 'longitude of perihelion w/ respect to moving equinox − 180°: ', lpx1_deg, '°'
 
   print *,'--------------------------------------------------------------------------------'
-  print *,'using orbinterp'
-  call orbinterp(yearCE,ecc1,obl1,lpx1,time,ecc,obl,lpx)
-  print *,'linearly interpolated astronomical solution at ',yearBP,' BP'
+  print *,'using orbinterp -> updated to saving version'
+  call orbpar(yearCE,ecc1,obl1,lpx1)
+!!$  print *,'linearly interpolated astronomical solution at ',yearBP,' BP'
   ! convert from radians to degrees
   obl1_deg = obl1 * R2D
   lpx1_deg = lpx1 * R2D
@@ -211,7 +211,7 @@ program paleoinsolation
   do i=1,n
      print *, 'yearAD =', yAD+i*100
      interpolate_time(i) = yAD+i*100
-     call orbinterp(real(yAD+i*100, kind = 8),interpolate_ecc(i),interpolate_obl(i),interpolate_lpx(i),time,ecc,obl,lpx)
+     call orbpar(real(yAD+i*100, kind = 8),interpolate_ecc(i),interpolate_obl(i),interpolate_lpx(i))
   end do
   print *, 'interpolated to times between', yAD+100, ' and ', yAD+n*100, ' AD, in ', 100, ' yr steps'
   long = pi / 2._dp
@@ -246,7 +246,7 @@ program paleoinsolation
   do i=1,n
      print *, 'yearAD =', yAD+i*100
      interpolate_time(i) = yAD+i*100
-     call orbinterp(real(yAD+i*100, kind = 8),interpolate_ecc(i),interpolate_obl(i),interpolate_lpx(i),time,ecc,obl,lpx)
+     call orbpar(real(yAD+i*100, kind = 8),interpolate_ecc(i),interpolate_obl(i),interpolate_lpx(i))
   end do
   print *, 'interpolated to times between', yAD+100, ' and ', yAD+n*100, ' AD, in ', 100, ' yr steps'
   long = pi / 2._dp
