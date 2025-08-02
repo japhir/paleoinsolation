@@ -1,3 +1,21 @@
+# Output Plotting Scripts for PaleoInsolation
+# This script is intended to read in outputs and double-check that they are consistent.
+# Copyright (C) 2025 Ilja J. Kocken
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 ## libraries
 using CSV
 using DataFrames
@@ -58,7 +76,7 @@ ZB20a = CSV.read("dat/ZB20a-plan3.dat",
                            ])
 
 # snvec  c: computed PT-ZB18a_1-1.bin
-ZB18a_bin = readbindata()
+ZB18a_bin = readbindata("dat/PT-ZB18a_1-1.bin")
 
 # snvec  c: computed PT-ZB18a_1-1.dat
 PT_ZB18a = CSV.read("dat/PT-ZB18a_1-1.dat",
@@ -255,41 +273,6 @@ save("imgs/need_to_interpolate?.png", f,
 # lines!(PT_ZB18a.time, PT_ZB18a.eccentricity)
 # lines!(PT_ZB20a.time, PT_ZB20a.eccentricity)
 
-# plot obliquity for paper
-f, ax = scatterlines(PT_ZB18a.time[begin:100],
-                     rad2deg.(PT_ZB18a.obliquity[begin:100]),
-              label = "ZB18a(1,1)",
-              axis = (; #xlabel = "Time (Myr)",
-                      xlabel = "Time (kyr)",
-                      ylabel = "Obliquity (°)"))
-scatterlines!(ax, # 1e-3*
-              PT_ZB20a.time[begin:100],
-              rad2deg.(PT_ZB20a.obliquity[begin:100]),
-       alpha = 0.8,
-       label = "ZB20a(1,1)")
-
-scatterlines!(ax,
-         ZB18a_interp.time,
-         rad2deg.(ZB18a_interp.obliquity),
-         label = "ZB18a(1,1) interp")
-# xlims!(ax, -0.391,-0.37)
-# ylims!(ax, 23.4871, 23.4905)
-
-# plot lpx for paper
-# scatterlines(PT_ZB18a.time, PT_ZB18a.lph)
-# scatterlines!(PT_ZB18a.time, PT_ZB18a.lphu)
-scatterlines(PT_ZB18a.time, PT_ZB18a.precession)
-# scatterlines(PT_ZB18a.time, PT_ZB18a.precession_unwrapped)
-scatterlines(PT_ZB18a.time, PT_ZB18a.lpx)
-scatterlines(PT_ZB18a.time,
-             mod.(PT_ZB18a.lpx,2pi))
-scatterlines(PT_ZB18a.time, PT_ZB18a.climatic_precession)
-# scatterlines(PT_ZB20a.time, PT_ZB20a.climatic_precession)
-# check
-lines!(ZB18a_insolation.time, ZB18a_insolation.climatic_precession,
-       color = :yellow)
-# scatterlines(PT_ZB18a.time, PT_ZB18a.obliquity)
-
 f, ax = scatterlines(
     PT_ZB18a.time,
     PT_ZB18a.lpx,
@@ -369,20 +352,10 @@ save("imgs/interpolation_ok.png",f)
 # OK so it does differ very slightly!
 # let's try to interpolate the whole interval
 
-# vlines!(ax, [-58, -71], color = Makie.wong_colors()[1:2])
 # hlines!(ax, collect(rad2deg.(extrema(PT_ZB18a.obliquity))),
         # color = fill(Makie.wong_colors()[1],2))
 # hlines!(ax, collect(rad2deg.(extrema(PT_ZB18a.obliquity[PT_ZB18a.time .>= -58e3]))),
         # color = fill(Makie.wong_colors()[1],2))
-
-xlims!(ax, (-72,0))
-Legend(f[0,1], ax, tellwidth = false, tellheight = true,
-       halign = :right, orientation = :horizontal)
-rowgap!(f.layout, 6)
-
-save("imgs/obliquity.png", f,
-     size=(4.5inch, 2inch), px_per_unit = 300/inch)
-
 xlims!(ax, -11, -8)
 ylims!(ax, 24.2,24.238)
 save("imgs/need_to_interpolate_obliquity?.png", f,
