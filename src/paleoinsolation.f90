@@ -145,7 +145,7 @@ program paleoinsolation
   allocate(sixtyfive(n))
   sixtyfive = insolation(ecc, obl, modulo(lpx - pi, 2.0_dp*pi), long, lat, S0)
   print *, 'calculated 65°N summer insolation at all timesteps in astronomical solution'
-  call writedata("dat/ZB18a_insolation.dat", time,ecc,obl,prec,lpx,climprec,sixtyfive)
+  call writedata("out/ZB18a_insolation.dat", time,ecc,obl,prec,lpx,climprec,sixtyfive)
   print *, 'wrote 65°N summer insolation to file'
 
   print *,'--------------------------------------------------------------------------------'
@@ -169,7 +169,7 @@ program paleoinsolation
 !!$  end do
 !!$  print *, 'interpolated to times between', yAD, ' and ', yAD+n
 !!$
-!!$  open(unit=io, file = 'interp_1620.dat', status="replace", action="write")
+!!$  open(unit=io, file = 'out/interp_1620.dat', status="replace", action="write")
 !!$  do i=1,n
 !!$     write(io,*) interpolate_time(i), interpolate_ecc(i), interpolate_obl(i), interpolate_lpx(i)
 !!$  enddo
@@ -190,7 +190,7 @@ program paleoinsolation
 !!$  end do
 !!$  print *, 'interpolated to times between', yAD, ' and ', yAD+n
 
-!!$  open(unit=io, file = 'interp_-9849.dat', status="replace", action="write")
+!!$  open(unit=io, file = 'out/interp_-9849.dat', status="replace", action="write")
 !!$  do i=1,n
 !!$     write(io,*) interpolate_time(i), interpolate_ecc(i), interpolate_obl(i), interpolate_lpx(i)
 !!$  enddo
@@ -219,7 +219,7 @@ program paleoinsolation
   S0 = 1360.7_dp ! the input total insolation
   sixtyfive = insolation(interpolate_ecc, interpolate_obl, interpolate_lpx, long, lat, S0)
 
-  open(unit=io, file = 'interp_-40000.dat', status="replace", action="write")
+  open(unit=io, file = 'out/interp_-40000.dat', status="replace", action="write")
   do i=1,n
      write(io,*) interpolate_time(i), interpolate_ecc(i), interpolate_obl(i), modulo(interpolate_lpx(i)-pi,2.0_dp*pi), sixtyfive(i)
   enddo
@@ -254,7 +254,7 @@ program paleoinsolation
   S0 = 1360.7_dp ! the input total insolation
   sixtyfive = insolation(interpolate_ecc, interpolate_obl, interpolate_lpx, long, lat, S0)
 
-  open(unit=io, file = 'interp_-250_-170.dat', status="replace", action="write")
+  open(unit=io, file = 'out/interp_-250_-170.dat', status="replace", action="write")
   do i=1,n
      write(io,*) interpolate_time(i), interpolate_ecc(i), interpolate_obl(i), modulo(interpolate_lpx(i)-pi,2.0_dp*pi), sixtyfive(i)
   enddo
@@ -280,12 +280,12 @@ program paleoinsolation
   print *,' and Earth’s latitudes for all timesteps in astronomical solution'
 !!$
   !> write only the insolation at t0 to file as a matrix
-  open(unit=42, file='insgrid.dat')
+  open(unit=42, file='out/insgrid.dat')
   do j=1, 7
         write(42,*) latlons(1,1,j), latlons(1,2,j), latlons(1,3,j), latlons(1,4,j), latlons(1,5,j)
   enddo
   close(42)
-  print *, 'wrote the grid of insolation at t0 to insgrid.dat'
+  print *, 'wrote the grid of insolation at t0 to out/insgrid.dat'
   ! TODO: write this to a netCDF file instead?
   print *,'--------------------------------------------------------------------------------'
 
