@@ -1,3 +1,4 @@
+/libpaleoinsolation.a
 *.dat
 *.mod
 *.f90.o
@@ -10,9 +11,10 @@
 /out
 /dat
 /snvec/
-/snvec_clone
+/clonesnvec
 /.Rhistory
 /imgs/*.png
+/imgs/*.pdf
 /imgs/*.gif
 /imgs/*.mp4
 /imgs/*.svg
