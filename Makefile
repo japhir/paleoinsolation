@@ -31,8 +31,8 @@ LIB := $(patsubst %, lib%.a, $(NAME))
 TEST_EXE := $(patsubst %.f90, %.exe, $(TEST_SRCS))
 
 # declare all public targets
-.PHONY: all clean
-all: $(LIB) $(TEST_EXE) solution runsnvec insolation
+.PHONY: all solution buildsnvec runsnvec insolation clean cleanall
+all: $(LIB) $(TEST_EXE) insolation
 
 # compile the fortran routines
 
@@ -93,63 +93,95 @@ src/orb.f90.o: $(kind.mod)
 src/orb.f90.o: $(data.mod)
 src/orb.f90.o: $(interp.mod)
 
+# end of Fortran dependencies, remainder is snvec stuff and actually running the code
 
-
+# broad overview targets
 solution: dat/ZB18a-plan3.dat dat/ZB20a-plan3.dat
+buildsnvec: snvec/snvec.x
 runsnvec: dat/PT-ZB18a_1-1.dat dat/PT-ZB20a_1-1.dat
-insolation: dat/ZB18a_insolation.dat
+insolation: out/ZB18a_insolation.dat
+
+### solution:
+# download the orbital solution from the web
+# this is the 100-Myr version
+# we now provide the 300 Myr full files,
+# for now embedded in this repo!
+# ems-plan3.dat:
+# 	curl 'https://www.soest.hawaii.edu/oceanography/faculty/zeebe_files/Astro/PrecTilt/OS/ZB18a/ems-plan3.dat' > "$@"
+
+# extract the archive data files
+ifeq ($(wildcard dat/ZB18a-plan3.dat),)
+dat/ZB18a-plan3.dat:
+	tar xvf 'dat/ZB18a-plan3.tar.gz' --directory 'dat'
+else
+dat/ZB18a-plan3.dat:
+	echo "using local file $@"
+endif
+
+ifeq ($(wildcard dat/ZB20a-plan3.dat),)
+dat/ZB20a-plan3.dat:
+	tar xvf 'dat/ZB20a-plan3.tar.gz' --directory 'dat'
+else
+dat/ZB20a-plan3.dat:
+	echo "using local file $@"
+endif
 
 # git clone the snvec c-program
-snvec_clone:
+clonesnvec:
 	git clone 'https://github.com/rezeebe/snvec'
-	touch snvec_clone  # to track when this was copied in
+	touch clonesnvec # empty file to track when this was copied in
 
+### buildsnvec:
 # patch it to also save the lpx
-snvec/snvec-3.7.5.c: snvec_clone snvec.patch
+snvec/snvec-3.7.5.c: clonesnvec snvec.patch
 	patch "$@" < snvec.patch
 
 # compile snvec
 snvec/snvec.x: snvec/snvec-3.7.5.c
 	gcc -std=c99 -o snvec/snvec.x snvec/snvec-3.7.5.c -lm
 
-# download the orbital solution from the web
-# this is the 100-Myr version
-# we now also provide the 300 Myr full files,
-# for now embedded in this repo!
-# ems-plan3.dat:
-# 	curl 'https://www.soest.hawaii.edu/oceanography/faculty/zeebe_files/Astro/PrecTilt/OS/ZB18a/ems-plan3.dat' > "$@"
-
-# dat/ZB18a-plan3.dat:
-#	curl 'xxx' > "$@"
-# dat/ZB20a-plan3.dat:
-#	curl 'xxx' > "$@"
-
+### runsnvec
 # run snvec for ZB18a
+ifeq ($(wildcard dat/PT-ZB18a_1-1.dat),)
 dat/PT-ZB18a_1-1.dat: snvec/snvec.x dat/ZB18a-plan3.dat
 	./snvec/snvec.x -3e5 1 1 'dat' 'ZB18a-plan3.dat'
 	mv 'out.dat' 'dat/PT-ZB18a_1-1.dat'
 	mv 'out.bin' 'dat/PT-ZB18a_1-1.bin'
+else
+dat/PT-ZB18a_1-1.dat:
+	echo "using pre-built $@"
+endif
 
 # run snvec for ZB20a
+ifeq ($(wildcard dat/PT-ZB20a_1-1.dat),)
 dat/PT-ZB20a_1-1.dat: snvec/snvec.x dat/ZB20a-plan3.dat
 	./snvec/snvec.x -3e5 1 1 'dat' 'ZB20a-plan3.dat'
 	mv 'out.dat' 'dat/PT-ZB20a_1-1.dat'
 	mv 'out.bin' 'dat/PT-ZB20a_1-1.bin'
+else
+dat/PT-ZB20a_1-1.dat:
+	echo "using pre-built $@"
+endif
 
+ifeq ($(wildcard out),)
+out:
+	mkdir out
+endif
+
+### insolation
 # run example fortran routine to calculate insolation
-dat/ZB18a_insolation.dat: dat/PT-ZB18a_1-1.dat $(paleoinsolation.mod)
+out/ZB18a_insolation.dat: out dat/PT-ZB18a_1-1.dat $(paleoinsolation.mod)
 	./src/paleoinsolation.exe
 
 
 # cleanup, filter to avoid removing source code by accident
 clean:
-	#-rm 'ems-plan3.dat'
-	#-rm -rf 'snvec'
-	#-rm 'snvec_clone'
 	$(RM) $(TEST_EXE)
-	# $(RM) 'dat/PT-ZB18a_1-1.dat'
-	# $(RM) 'dat/PT-ZB18a_1-1.bin'
-	# $(RM) 'dat/PT-ZB20a_1-1.dat'
-	# $(RM) 'dat/PT-ZB20a_1-1.bin'
-	# $(RM) 'dat/ZB18a_insolation.dat'
+	$(RM) 'snvec_clone'
+	$(RM) $(wildcard out/*.dat)
 	$(RM) $(filter %.o, $(OBJS)) $(LIB) $(wildcard *.mod)
+
+cleanall:
+	$(RM) $(wildcard dat/*.dat)
+	$(RM) $(wildcard dat/*.bin)
+	$(RM) -r 'snvec'
