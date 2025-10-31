@@ -17,10 +17,10 @@ authors:
     orcid: 'https://orcid.org/0000-0003-2196-8718'
 identifiers:
   - type: doi
-    value: 10.1234/zenodo.4321
+    value: 10.5281/zenodo.17478418
     description: Zenodo Archive
 repository-code: 'https://github.com/japhir/paleoinsolation'
-repository-artifact: 'https://zenodo.org/record/7865280'
+repository-artifact: 'https://zenodo.org/records/17478419'
 abstract: >-
 
   To facilitate using recent astronomical solutions in
