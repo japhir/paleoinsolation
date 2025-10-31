@@ -1,21 +1,44 @@
 #+title: ~paleoinsolation~: New Insolation Forcing for Paleoclimate Models
+#+author: Ilja J. Kocken and Richard E. Zeebe
+#+date: 2025-10-30
+
+[[https://doi.org/10.5281/zenodo.17478418][https://zenodo.org/badge/DOI/10.5281/zenodo.17478418.svg]]
 
 To facilitate using recent astronomical solutions in [[https://en.wikipedia.org/wiki/General_circulation_model][GCMs]] such as the [[https://www.cesm.ucar.edu/][CESM]], we make the ~ZB18a~ and ~ZB20a~ astronomical solutions readily available.
 
+This code is the supplement to a work-in-progress paper, available as a pre-print at:
+
+Kocken, I.J.  and Zeebe, R.E. (2025). New Insolation Forcing for Paleoclimate Studies. ESS Open Archive. doi: [[https://doi.org/10.22541/essoar.175511741.18639670/v1][10.22541/essoar.175511741.18639670]]
+
 * Overview
-We provide a [[file:Makefile][Makefile]] that downloads the orbital solutions and the [[https://github.com/rezeebe/snvec][snvec C program]], [[file:snvec.patch][patches]] snvec to also output the longitude of perihelion, and then compiles and runs snvec for 100 Myr to create the ~ZB18a(1,1)~ and ~ZB20a(1,1)~ solutions (where the numbers in parameters refer to the dynamical ellipticity and the tidal dissipation, respectively).
+We provide a [[file:Makefile][Makefile]] that downloads the orbital solutions and the [[https://github.com/rezeebe/snvec][snvec C program]], [[file:snvec.patch][patches]] snvec to also output the longitude of perihelion, and then compiles and runs snvec for the past 300 Myr to create the ~ZB18a(1,1)~ and ~ZB20a(1,1)~ solutions (where the numbers in parameters refer to the dynamical ellipticity and the tidal dissipation, respectively).
 
-The data files [[file:dat/PT-ZB18a_1-1.dat]] and [[file:dat/PT-ZB20a_1-1.dat]] contain this output in case you would prefer to skip this step. We also provide binary files if you care about preserving disk space and slightly faster reads (which needs to happen only once per run) at [[file:dat/PT-ZB18a_1-1.bin]] and [[file:dat/PT-ZB18a_1-1.bin]].
+Please note that intervals prior to −58 and −71 Myr (for ZB18a and ZB20a, respectively) are unconstrained due to solar system chaos.
 
-We provide [[file:src/insolation.f90][Fortran subroutines]]  that calculate insolation and interpolate the astronomical parameters to a certain calendar date, and provide drop-in replacements to existing Fortran subroutines from the CESM.
+Compressed output of the HNBody simulations for ZB18a and ZB20a for the past 300 Myr.
+- [[file:dat/ZB18a-plan3.tar.gz]]
+- [[file:dat/ZB20a-plan3.tar.gz]]
+ 
+Precession-tilt solutions for the past 300 Myr. Use these if you would prefer to skip downloading/patching/building/running snvec.
+Binary files are provided if you care about preserving disk space and slightly faster reads (which needs to happen only once per run).
+- [[file:dat/PT-ZB18a_1-1.dat]] and [[file:dat/PT-ZB18a_1-1.bin]]
+- [[file:dat/PT-ZB20a_1-1.dat]] and [[file:dat/PT-ZB18a_1-1.bin]]
 
-[[https://github.com/CESM-Development/paleoToolkit/tree/master/PaleoCalAdjust][PaleoCalAdjust]]: drop-in replacement for subroutine [[https://github.com/CESM-Development/paleoToolkit/blob/master/PaleoCalAdjust/f90/modules/GISS_orbpar_subs.f90][GISS_orbpars]] in [[file:src/orb.f90]].
+We provide [[file:src/insolation.f90][Fortran subroutines]]  that interpolate the astronomical parameters to a certain calendar date and calculate insolation, and provide drop-in replacements to existing Fortran subroutines from the CESM.
+- [[file:src/paleoinsolation.f90]] example program that applies the different routines.
+- [[file:src/data.f90]] reads binary and plain-text data files,  writes to file.
+- [[file:src/interp.f90]] interpolates the orbital solutions.
+- [[file:src/insolation.f90]] calculates insolation.
+- [[file:src/orb.f90]] drop-in replacement for subroutine [[https://github.com/CESM-Development/paleoToolkit/blob/master/PaleoCalAdjust/f90/modules/GISS_orbpar_subs.f90][GISS_orbpars]] in [[https://github.com/CESM-Development/paleoToolkit/tree/master/PaleoCalAdjust][PaleoCalAdjust]].
+- [[file:src/shr_orb_mod.F90]] drop-in replacement for the ~shr_orb_params~ subroutine in the [[https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90][shr_orb_mod]] module in [[https://github.com/ESCOMP/CDEPS/tree/main][CDEPS]] (see below!)
 
-[[https://github.com/ESCOMP/CDEPS/tree/main][CDEPS]]: drop-in replacement for the ~shr_orb_params~ subroutine in the [[https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90][shr_orb_mod]] module in [[file:src/shr_orb_mod.F90]].
-
-We also provide the [[https://cran.r-project.org/][R]] functions [[file:R/insolation.R][insolation]] (calculates insolation, inspired by [[https://cran.r-project.org/package=palinsol][palinsol]]) and [[file:R/prep_solution.R][prep_solution]] (uses [[https://japhir.github.io/snvecR][snvecR]]).
+We also provide the [[https://cran.r-project.org/][R]] functions [[file:R/insolation.R][insolation]] (calculates insolation, based on the R-package [[https://cran.r-project.org/package=palinsol][palinsol]]) and [[file:R/prep_solution.R][prep_solution]] (uses [[https://japhir.github.io/snvecR][snvecR]]) and the [[https://julialang.org/][Julia ]] code to generate the figures in the manuscript in [[file:figures.jl]].
 
 * Getting Started
+These commands will download everything in this repository to a local directory and run the example fortran code to interpolate the orbital solution and calculate insolation for some example timesteps/intervals.
+
+Use this if you want to play around independently to see how it works.
+
 #+begin_src sh
   cd ~/ # or wherever you want to install it
   # copy the project over
@@ -26,23 +49,56 @@ We also provide the [[https://cran.r-project.org/][R]] functions [[file:R/insola
   make
 #+end_src
 
-or in case you want to re-run all the steps
+Alternatively, you can navigate to the [[https://github.com/japhir/paleoinsolation/releases/][releases]] page to download a single ~.zip~ or ~.targ.gz~ archive file.
 
+* Other Commands
+The Makefile makes it possible to re-run the ~PT_ZB18a_1-1.dat~ creation from scratch. The below example explicitly triggers each of the targets in order to document the steps.
 #+begin_src sh
   cd ~/ # or wherever you want to install it
-  # copy the project over
+  # copy the repository to your local directory.
   git clone 'https://github.com/japhir/paleoinsolation'
   # enter the new directory
   cd 'paleoinsolation'
-  # remove the pre-built snvec output files
-  rm dat/PT-ZB{18,20}a_1-1.dat
-  rm dat/PT-ZB{18,20}a_1-1.bin
-  make clean
-  # build and run the fortran program
-  make
+  # to trigger creation from scratch
+  make clean      # delete Fortran binaries and out/*.dat files
+  make cleanall   # remove the intermediate .dat and .bin files so they can be re-created.
+  make solution   # extract tar.gz orbital solution files 
+  make clonesnvec # download snvec from https://github.com/rezeebe/snvec
+  make buildsnvec # patch and build snvec to output the longitude of perihelion with
+                  # respect to the moving equinox
+  make runsnvec   # run snvec
+  make insolation # run fortran code to interpolate and calculate insolation examples
 #+end_src
-* Contributing
-Contributions are more than welcome! If something doesn't work the way you expect and you don't know how to fix it, write an issue. If you do know how to fix it, feel free to write a pull request!
+
+The default target is ~make insolation~, which will compile the Fortran code and calculate example insolation outputs while re-using the existing precession-tilt files.
+
+* Implementation in CESM
+We aim to make implementation in the Community Earth System Model as easy as possible, while allowing this project to be built and tested independently.
+
+The simplest approach is to ~git clone~ the entire directory and copy files and snippets over to your local install as instructed. For fine-tuned control and reduced download sizes, you do not need to clone the entire repository but can instead download only the files mentioned below.
+
+1. Navigate to your local ~share/src~ directory in the CESM installation. (It should look similar to [[https://github.com/ESCOMP/CESM_share][the CESM_share repo]]).
+2. Copy our [[file:src/data.f90]] to this directory.
+3. Copy our [[file:src/interp.f90]] to this directory.
+4. Create a directory to save the astronomical solution data, i.e. ~share/src/dat~.
+5. Download and copy [[file:dat/PT-ZB18a_1-1.dat]] and (if desired) [[file:dat/PT-ZB20a_1-1.dat]] to this new directory. If you care about storage space and read/write speed, you can instead download the ~.bin~ files from the [[file:dat/]] directory.
+6. Rename our [[file:src/shr_orb_mod.F90]]  and copy to this directory, so that you can copy parts of it.
+7. Use ~diff~ or similar to verify that you agree with proposed *additions* to the CESM file ~shr_orb_mod.F90~. Do not just replace the entire file! I have omitted large sections to simplify local building/testing without requiring all the CESM dependencies.
+8. Manually edit the CESM file ~shr_orb_mod.F90~ file in your text editor.
+9. Merge the additions from our [[file:src/shr_orb_mod.F90]] into this file:
+   - Copy the extra dependencies for ~data~ and ~interp~ from our lines 7 and 8 to the top of the file.
+   - Search for ~SUBROUTINE shr_orb_params~.
+   - Delete until ~END SUBROUTINE shr_orb_params~, eliminating the entire subroutine.
+   - Copy and paste our version of the ~shr_orb_params~ subroutine in the same location.
+   - Update the filepath in the line that starts with ~call readdata~ to the directory/file that you stored the astronomical solution files in. This is where you choose whether you want to use ZB18a(1,1) or ZB20a(1,1).
+   - If you decided to use binary files (step 6 above), update the ~call readdata~ line to ~call readbindata~ and update the filename appropriately.
+10. Test if it will build.
+
+* Contributing and Troubleshooting
+Contributions are more than welcome!
+If something doesn't work the way you expect and you don't know how to fix it, write an issue.
+If you do know how to fix it, feel free to write a pull request!
+Feel free to create issues to ask for help.
 
 * See Also
 - [[https://github.com/rezeebe/snvec][snvec]] :: the C-code that calculates climatic precession and obliquity from an astronomical solution and assumptions about tidal dissipation and dynamical ellipticity.

@@ -177,7 +177,7 @@ out/ZB18a_insolation.dat: out dat/PT-ZB18a_1-1.dat $(paleoinsolation.mod)
 # cleanup, filter to avoid removing source code by accident
 clean:
 	$(RM) $(TEST_EXE)
-	$(RM) 'snvec_clone'
+	$(RM) 'clonesnvec'
 	$(RM) $(wildcard out/*.dat)
 	$(RM) $(filter %.o, $(OBJS)) $(LIB) $(wildcard *.mod)
 
