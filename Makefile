@@ -31,10 +31,11 @@ LIB := $(patsubst %, lib%.a, $(NAME))
 TEST_EXE := $(patsubst %.f90, %.exe, $(TEST_SRCS))
 
 # declare all public targets
-.PHONY: all solution buildsnvec runsnvec insolation clean cleanall
-all: $(LIB) $(TEST_EXE) insolation
+.PHONY: all solution buildsnvec runsnvec fortran insolation clean cleanall
+all: insolation
 
 # compile the fortran routines
+fortran: $(LIB) $(TEST_EXE)
 
 # create static library from the object files
 $(LIB): $(OBJS)
@@ -99,7 +100,7 @@ src/orb.f90.o: $(interp.mod)
 solution: dat/ZB18a-plan3.dat dat/ZB20a-plan3.dat
 buildsnvec: snvec/snvec.x
 runsnvec: dat/PT-ZB18a_1-1.dat dat/PT-ZB20a_1-1.dat
-insolation: out/ZB18a_insolation.dat
+insolation: fortran out/ZB18a_insolation.dat
 
 ### solution:
 # download the orbital solution from the web
@@ -177,11 +178,11 @@ out/ZB18a_insolation.dat: out dat/PT-ZB18a_1-1.dat $(paleoinsolation.mod)
 # cleanup, filter to avoid removing source code by accident
 clean:
 	$(RM) $(TEST_EXE)
-	$(RM) 'clonesnvec'
 	$(RM) $(wildcard out/*.dat)
 	$(RM) $(filter %.o, $(OBJS)) $(LIB) $(wildcard *.mod)
 
-cleanall:
+cleanall: clean
 	$(RM) $(wildcard dat/*.dat)
 	$(RM) $(wildcard dat/*.bin)
 	$(RM) -r 'snvec'
+	$(RM) 'clonesnvec'

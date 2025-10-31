@@ -67,6 +67,7 @@ The Makefile makes it possible to re-run the ~PT_ZB18a_1-1.dat~ creation from sc
   make buildsnvec # patch and build snvec to output the longitude of perihelion with
                   # respect to the moving equinox
   make runsnvec   # run snvec
+  make fortran    # compile the fortran code
   make insolation # run fortran code to interpolate and calculate insolation examples
 #+end_src
 
