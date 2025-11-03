@@ -76,24 +76,7 @@ The default target is ~make insolation~, which will compile the Fortran code and
 * Implementation in CESM
 We aim to make implementation in the Community Earth System Model as easy as possible, while allowing this project to be built and tested independently.
 
-The simplest approach is to ~git clone~ the entire directory and copy files and snippets over to your local install as instructed. For fine-tuned control and reduced download sizes, you do not need to clone the entire repository but can instead download only the files mentioned below.
-
-1. Navigate to your local ~share/src~ directory in the CESM installation. (It should look similar to [[https://github.com/ESCOMP/CESM_share][the CESM_share repo]]).
-2. Copy our [[file:src/data.f90]] to this directory.
-3. Copy our [[file:src/interp.f90]] to this directory.
-4. Create a directory to save the astronomical solution data, i.e. ~share/src/dat~.
-5. Download and copy [[file:dat/PT-ZB18a_1-1.dat]] and (if desired) [[file:dat/PT-ZB20a_1-1.dat]] to this new directory. If you care about storage space and read/write speed, you can instead download the ~.bin~ files from the [[file:dat/]] directory.
-6. Rename our [[file:src/shr_orb_mod.F90]]  and copy to this directory, so that you can copy parts of it.
-7. Use ~diff~ or similar to verify that you agree with proposed *additions* to the CESM file ~shr_orb_mod.F90~. Do not just replace the entire file! I have omitted large sections to simplify local building/testing without requiring all the CESM dependencies.
-8. Manually edit the CESM file ~shr_orb_mod.F90~ file in your text editor.
-9. Merge the additions from our [[file:src/shr_orb_mod.F90]] into this file:
-   - Copy the extra dependencies for ~data~ and ~interp~ from our lines 7 and 8 to the top of the file.
-   - Search for ~SUBROUTINE shr_orb_params~.
-   - Delete until ~END SUBROUTINE shr_orb_params~, eliminating the entire subroutine.
-   - Copy and paste our version of the ~shr_orb_params~ subroutine in the same location.
-   - Update the filepath in the line that starts with ~call readdata~ to the directory/file that you stored the astronomical solution files in. This is where you choose whether you want to use ZB18a(1,1) or ZB20a(1,1).
-   - If you decided to use binary files (step 6 above), update the ~call readdata~ line to ~call readbindata~ and update the filename appropriately.
-10. Test if it will build.
+The [[file:CESM/]] directory has all the files needed as well as a [[file:CESM/README.org]] on how to implement our code.
 
 * Contributing and Troubleshooting
 Contributions are more than welcome!

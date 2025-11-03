@@ -1,0 +1,34 @@
+#+title: ~paleoinsolation~: New Insolation Forcing for Paleoclimate Models
+#+author: Ilja J. Kocken and Richard E. Zeebe
+#+date: 2025-10-30
+
+[[https://doi.org/10.5281/zenodo.17478418][https://zenodo.org/badge/DOI/10.5281/zenodo.17478418.svg]]
+
+To facilitate using recent astronomical solutions in [[https://en.wikipedia.org/wiki/General_circulation_model][GCMs]] such as the [[https://www.cesm.ucar.edu/][CESM]], we make the ~ZB18a~ and ~ZB20a~ astronomical solutions readily available.
+
+This code is the supplement to a work-in-progress paper, available as a pre-print at:
+
+Kocken, I.J.  and Zeebe, R.E. (2025). New Insolation Forcing for Paleoclimate Studies. ESS Open Archive. doi: [[https://doi.org/10.22541/essoar.175511741.18639670/v1][10.22541/essoar.175511741.18639670]]
+
+* Implementation in CESM
+We aim to make implementation in the Community Earth System Model as easy as possible.
+
+1. Download all the files in this folder locally:
+  #+begin_src sh
+    git clone --filter=blob:none --sparse git@github.com:japhir/paleoinsolation.git
+    cd 'paleoinsolation'
+    git sparse-checkout set CESM
+    cd CESM
+  #+end_src
+2. Navigate to your local ~share/src~ directory in the CESM installation. (It should look similar to [[https://github.com/ESCOMP/CESM_share][the CESM_share repo]]).
+3. Copy our [[file:src/data.f90]] to this directory.
+4. Copy our [[file:src/interp.f90]] to this directory.
+5. Create a directory to save the astronomical solution data, i.e. ~share/src/dat~.
+6. Copy [[file:src/dat/PT-ZB18a_1-1.dat]] and (if desired) [[file:src/dat/PT-ZB20a_1-1.dat]] to this new directory. If you care about storage space and read/write speed, you can instead download the ~.bin~ files from the [[file:../dat/]] directory.
+7. Replace the ~shr_orb_mod.F90~ file with our [[file:src/shr_orb_mod.F90]].
+8. If you used a different data storage location than ~src/dat/~:
+   1. Update the filepath in the line that starts with ~call readdata~ to the directory/file that you stored the astronomical solution files in. This is where you choose whether you want to use ZB18a(1,1) or ZB20a(1,1).
+   2. If you decided to use binary files (step 6 above), update the ~call readdata~ line to ~call readbindata~ and update the filename appropriately.
+9. Test if it will build.
+
+See [[https://github.com/japhir/paleoinsolation?tab=readme-ov-file#contributing-and-troubleshooting][Contributing and Troubleshooting]] if you need help.
