@@ -30,7 +30,7 @@ We provide [[file:src/insolation.f90][Fortran subroutines]]  that interpolate th
 - [[file:src/interp.f90]] interpolates the orbital solutions.
 - [[file:src/insolation.f90]] calculates insolation.
 - [[file:src/orb.f90]] drop-in replacement for subroutine [[https://github.com/CESM-Development/paleoToolkit/blob/master/PaleoCalAdjust/f90/modules/GISS_orbpar_subs.f90][GISS_orbpars]] in [[https://github.com/CESM-Development/paleoToolkit/tree/master/PaleoCalAdjust][PaleoCalAdjust]].
-- [[file:src/shr_orb_mod.F90]] drop-in replacement for the ~shr_orb_params~ subroutine in the [[https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90][shr_orb_mod]] module in [[https://github.com/ESCOMP/CDEPS/tree/main][CDEPS]] (see below!)
+- [[file:CESM/]] drop-in replacement for the ~shr_orb_params~ subroutine in the [[https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90][shr_orb_mod]] module in [[https://github.com/ESCOMP/CDEPS/tree/main][CDEPS]] (see [[file:CESM/README.org]] for implementation!)
 
 We also provide the [[https://cran.r-project.org/][R]] functions [[file:R/insolation.R][insolation]] (calculates insolation, based on the R-package [[https://cran.r-project.org/package=palinsol][palinsol]]) and [[file:R/prep_solution.R][prep_solution]] (uses [[https://japhir.github.io/snvecR][snvecR]]) and the [[https://julialang.org/][Julia ]] code to generate the figures in the manuscript in [[file:figures.jl]].
 
