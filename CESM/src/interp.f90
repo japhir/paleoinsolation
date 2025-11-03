@@ -1,5 +1,5 @@
 module interp
-  use kind, only : dp
+  use shr_kind_mod, only: SHR_KIND_R8, SHR_KIND_I8
 
   implicit none
 
@@ -12,9 +12,9 @@ contains
 ! locate_dp
 integer function locate(xx,x)
   ! Locate a value in a sorted array
-  real(dp), dimension(:), intent(in) :: xx
-  real(dp), intent(in) :: x
-  integer :: n,jl,jm,ju
+  real(SHR_KIND_R8), dimension(:), intent(in) :: xx
+  real(SHR_KIND_R8), intent(in) :: x
+  integer(SHR_KIND_I8) :: n,jl,jm,ju
   logical :: ascnd
   n=size(xx)
   ascnd = (xx(n) >= xx(1))
