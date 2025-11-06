@@ -10,7 +10,12 @@ This code is the supplement to a work-in-progress paper, available as a pre-prin
 
 Kocken, I.J.  and Zeebe, R.E. (2025). New Insolation Forcing for Paleoclimate Studies. ESS Open Archive. doi: [[https://doi.org/10.22541/essoar.175511741.18639670/v1][10.22541/essoar.175511741.18639670]]
 
-* Overview
+* Implementation in CESM
+We aim to make implementation in the Community Earth System Model as easy as possible, while allowing this project to be built and tested independently.
+
+The [[file:CESM/]] directory has all the files needed as well as a [[file:CESM/README.org]] on how to implement our code.
+
+* Details
 We provide a [[file:Makefile][Makefile]] that downloads the orbital solutions and the [[https://github.com/rezeebe/snvec][snvec C program]], [[file:snvec.patch][patches]] snvec to also output the longitude of perihelion, and then compiles and runs snvec for the past 300 Myr to create the ~ZB18a(1,1)~ and ~ZB20a(1,1)~ solutions (where the numbers in parameters refer to the dynamical ellipticity and the tidal dissipation, respectively).
 
 Please note that intervals prior to −58 and −71 Myr (for ZB18a and ZB20a, respectively) are unconstrained due to solar system chaos.
@@ -72,11 +77,6 @@ The Makefile makes it possible to re-run the ~PT_ZB18a_1-1.dat~ creation from sc
 #+end_src
 
 The default target is ~make insolation~, which will compile the Fortran code and calculate example insolation outputs while re-using the existing precession-tilt files.
-
-* Implementation in CESM
-We aim to make implementation in the Community Earth System Model as easy as possible, while allowing this project to be built and tested independently.
-
-The [[file:CESM/]] directory has all the files needed as well as a [[file:CESM/README.org]] on how to implement our code.
 
 * Contributing and Troubleshooting
 Contributions are more than welcome!
