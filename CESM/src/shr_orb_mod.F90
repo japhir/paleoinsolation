@@ -1,12 +1,10 @@
 MODULE shr_orb_mod
 
   use shr_kind_mod, only: SHR_KIND_R8, SHR_KIND_IN
-  use shr_sys_mod
-  use shr_const_mod
-  use shr_log_mod, only: s_loglev  => shr_log_Level
-  use shr_log_mod, only: s_logunit => shr_log_Unit
-
-  ! extra dependencies from this project
+  use shr_sys_mod, only: shr_sys_abort
+  use shr_const_mod, only: shr_const_pi
+  use shr_log_mod, only: shr_log_getLogUnit
+  ! extra dependencies from PaleoInsolation
   use data, only: readdata
   use interp, only: locate
 
@@ -15,8 +13,6 @@ MODULE shr_orb_mod
   !----------------------------------------------------------------------------
   ! PUBLIC: Interfaces and global data
   !----------------------------------------------------------------------------
-  public :: shr_orb_azimuth
-  public :: shr_orb_cosinc
   public :: shr_orb_cosz
   public :: shr_orb_params
   public :: shr_orb_decl
@@ -53,62 +49,6 @@ CONTAINS
   END SUBROUTINE set_constant_zenith_angle_deg
 
   !=======================================================================
-  real(SHR_KIND_R8) pure function shr_orb_azimuth(jday,lat,lon,declin,z)
-
-    !----------------------------------------------------------------------------
-    !
-    ! function returns the solar azimuth angle.
-    ! azimuth angle is defined with respect to north, positive to east
-    ! based on Sproul, Renewable Energy, 2007
-    !
-    !----------------------------------------------------------------------------
-    real   (SHR_KIND_R8),intent(in) :: jday   ! Julian cal day (1.xx to 365.xx)
-    real   (SHR_KIND_R8),intent(in) :: lat    ! Centered latitude  (radians)
-    real   (SHR_KIND_R8),intent(in) :: lon    ! Centered longitude (radians)
-    real   (SHR_KIND_R8),intent(in) :: declin ! Solar declination  (radians)
-    real   (SHR_KIND_R8),intent(in) :: z      ! Solar zenith angle (radians)
-    
-    real(SHR_KIND_R8) :: hour_angle
-    !----------------------------------------------------------------------------
-   
-    hour_angle = 2.0_SHR_KIND_R8*pi*((jday-floor(jday)) - 0.5_SHR_KIND_R8) + lon
-
-    ! constrain hour_angle to [-pi,pi] to determine east/west below
-    if(hour_angle > pi) hour_angle = hour_angle - 2.0_SHR_KIND_R8*pi
-
-    shr_orb_azimuth = (sin(declin)*cos(lat) - cos(declin)*sin(lat)*cos(hour_angle))/ sin(z)
-    
-    shr_orb_azimuth = max(-1._SHR_KIND_R8, min(shr_orb_azimuth, 1._SHR_KIND_R8))
-
-    shr_orb_azimuth = acos(shr_orb_azimuth)
-
-    ! azimuth is east for times between midnight and noon (h < 0)
-    ! azimuth is west for times between noon and midnight (h > 0)
-    if(hour_angle > 0.) shr_orb_azimuth = 2.0_SHR_KIND_R8*pi - shr_orb_azimuth
-    
-  end function shr_orb_azimuth
-  
-  !=======================================================================
-  real(SHR_KIND_R8) pure function shr_orb_cosinc(z,azimuth,beta,aspect)
-    
-    !----------------------------------------------------------------------------
-    !
-    ! Returns incidence angle to local surface
-    !
-    !----------------------------------------------------------------------------
-    real   (SHR_KIND_R8),intent(in) :: z            ! Solar zenith angle (radians)
-    real   (SHR_KIND_R8),intent(in) :: azimuth      ! Solar azimuth angle (radians)
-    real   (SHR_KIND_R8),intent(in) :: beta         ! Surface slope angle (radians)
-    real   (SHR_KIND_R8),intent(in) :: aspect       ! Surface azimuth angle (radians)
-    
-    !----------------------------------------------------------------------------
-    
-    shr_orb_cosinc = sin(beta)*sin(z)*cos(aspect - azimuth) + cos(beta)*cos(z)
-    
-    shr_orb_cosinc = max(-1._SHR_KIND_R8, min(shr_orb_cosinc, 1._SHR_KIND_R8))
-    
-  end function shr_orb_cosinc
-
   !=======================================================================
 
   real(SHR_KIND_R8) pure FUNCTION shr_orb_cosz(jday,lat,lon,declin,dt_avg,uniform_angle)
@@ -131,7 +71,7 @@ CONTAINS
     real   (SHR_KIND_R8),intent(in) :: lon    ! Centered longitude (radians)
     real   (SHR_KIND_R8),intent(in) :: declin ! Solar declination (radians)
     real   (SHR_KIND_R8),intent(in), optional   :: dt_avg ! if present and set non-zero, then use in the
-    real   (SHR_KIND_R8),intent(in), optional   :: uniform_angle ! if present and true, apply uniform insolation 
+    real   (SHR_KIND_R8),intent(in), optional   :: uniform_angle ! if present and true, apply uniform insolation
     ! average cosz calculation
     logical :: use_dt_avg
 
@@ -365,8 +305,8 @@ CONTAINS
 
     !----------------------------------------------------------------------------
     ! radinp and algorithms below will need a degree to radian conversion factor
-
-    if ( log_print .and. s_loglev > 0 ) then
+    call shr_log_getLogUnit(s_logunit)
+    if ( log_print ) then
        write(s_logunit,F00) 'Calculate characteristics of the orbit:'
     end if
 
@@ -404,7 +344,7 @@ CONTAINS
 
     ELSE  ! Otherwise calculate based on years before present
 
-       if ( log_print .and. s_loglev > 0) then
+       if ( log_print ) then
           write(s_logunit,F01) 'Calculate orbit for year: ' , iyear_AD
        end if
        yb4_1950AD = 1950.0_SHR_KIND_R8 - real(iyear_AD,SHR_KIND_R8)
@@ -501,7 +441,6 @@ CONTAINS
     real   (SHR_KIND_R8) ::   lamb   ! Lambda, the earths long of perihelion
     real   (SHR_KIND_R8) ::   invrho ! Inverse normalized sun/earth distance
     real   (SHR_KIND_R8) ::   sinl   ! Sine of lmm
-
     ! Compute eccentricity factor and solar declination using
     ! day value where a round day (such as 213.0) refers to 0z at
     ! Greenwich longitude.
@@ -569,14 +508,19 @@ CONTAINS
     ! typically 22-26
     real   (SHR_KIND_R8),intent(in) :: mvelp    ! moving vernal equinox at perhel
     ! (0 to 360 degrees)
+    integer                         :: s_logunit
+    logical                         :: debug = .false.
     !-------------------------- Formats -----------------------------------------
     character(len=*),parameter :: F00 = "('(shr_orb_print) ',4a)"
     character(len=*),parameter :: F01 = "('(shr_orb_print) ',a,i9.4)"
     character(len=*),parameter :: F02 = "('(shr_orb_print) ',a,f6.3)"
     character(len=*),parameter :: F03 = "('(shr_orb_print) ',a,es14.6)"
     !----------------------------------------------------------------------------
-
-    if (s_loglev > 0) then
+#ifdef DEBUG
+    debug = .true.
+#endif
+    call shr_log_getLogUnit(s_logunit)
+    if(s_logunit .ne. 6 .or. debug) then
        if ( iyear_AD .ne. SHR_ORB_UNDEF_INT ) then
           if ( iyear_AD > 0 ) then
              write(s_logunit,F01) 'Orbital parameters calculated for year: AD ',iyear_AD
