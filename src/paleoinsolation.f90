@@ -14,6 +14,7 @@
 program paleoinsolation
   use kind, only : dp
   use data, only : readdata, readbindata, writedata
+  use interp, only : locate
   use orb, only : orbpar
   use insol, only : insolation
   use shr_kind_mod, only : SHR_KIND_R8, SHR_KIND_IN
@@ -149,7 +150,7 @@ program paleoinsolation
   call writedata("out/ZB18a_insolation.dat", time,ecc,obl,prec,lpx,climprec,sixtyfive)
   print *, 'wrote 65°N summer insolation to file'
   print *,'--------------------------------------------------------------------------------'
-  print *, 'calculated 65°N peak summer insolation for last srh_orb_param timestep:'
+  print *, 'calculated 65°N peak summer insolation for last shr_orb_param timestep:'
   print *, 'year: ', iyear_AD
   print *, 'insolation: ', insolation(eccen, obliqr, mvelpp, long, lat, S0)
   print *,'--------------------------------------------------------------------------------'
