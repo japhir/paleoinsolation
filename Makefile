@@ -58,10 +58,15 @@ insolation.mod := src/insolation.f90.o
 paleoinsolation.mod := src/paleoinsolation.f90.o
 
 shr_kind_mod.mod := src/shr_kind_mod.F90.o
+# shr_sys_mod.mod := src/shr_sys_mod.F90.o
 shr_const_mod.mod := src/shr_const_mod.F90.o
+
+# shr_abort_mod.mod := src/shr_abort_mod.F90.o
+# shr_sysabort => shr_abort_abort which uses ESMF_LOGWRITE, ESMF_LOGMSG_ERROR, ESMF_FINALIZE, ESMF_END_ABORT
+# emsf seems to be available from here: https://github.com/esmf-org/esmf
+shr_strconvert_mod.mod := src/shr_strconvert_mod.F90.o
 shr_log_mod.mod := src/shr_log_mod.F90.o
 shr_orb_mod.mod := src/shr_orb_mod.F90.o
-shr_strconvert_mod.mod := src/shr_strconvert_mod.F90.o
 
 src/data.f90.o: $(kind.mod)
 src/interp.f90.o: $(kind.mod)
@@ -73,20 +78,19 @@ src/paleoinsolation.f90.o: $(interp.mod)
 src/paleoinsolation.f90.o: $(orb.mod)
 src/paleoinsolation.f90.o: $(insolation.mod)
 
-src/paleoinsolation.f90.o: $(shr_kind_mod.mod)
-src/paleoinsolation.f90.o: $(shr_const_mod.mod)
-src/paleoinsolation.f90.o: $(shr_log_mod.mod)
-src/paleoinsolation.f90.o: $(shr_orb_mod.mod)
-
 # drop-in replacement for shr_orb_params in CDEPS
+src/paleoinsolation.f90.o: $(shr_orb_mod.mod)
 # https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90#L236
-src/shr_orb_mod.f90.o: $(data.mod)
-src/shr_orb_mod.f90.o: $(interp.mod)
+
 src/shr_orb_mod.f90.o: $(shr_kind.mod)
 src/shr_orb_mod.f90.o: $(shr_const.mod)
-src/shr_orb_mod.f90.o: $(shr_log.mod)
+src/shr_orb_mod.f90.o: $(shr_log_mod.mod)
+src/shr_orb_mod.f90.o: $(data.mod)
+src/shr_orb_mod.f90.o: $(interp.mod)
+
+src/shr_strconvert_mod.f90.o: $(shr_kind_mod.mod)
 src/shr_log_mod.f90.o: $(shr_kind_mod.mod)
-src/shr_const_mod.f90.o: $(shr_kind_mod.mod)
+src/shr_log_mod.f90.o: $(shr_strconvert_mod.mod)
 
 # drop-in replacement for orbpar in paleoToolkit
 # https://github.com/CESM-Development/paleoToolkit/blob/master/PaleoCalAdjust/f90/modules/GISS_orbpar_subs.f90
