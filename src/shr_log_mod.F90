@@ -9,18 +9,14 @@
 !
 ! !INTERFACE: ------------------------------------------------------------------
 
-!> IJK:
-!> WARNING: this is a trimmed-down version to cut back dependencies
-!> so that I could tweak the module shr_orb_mod, do not use this version of the shr_log_mod module!
-
 module shr_log_mod
 
 ! !USES:
 
   use shr_kind_mod, only: shr_kind_in, shr_kind_cx
-  !use shr_strconvert_mod, only: toString
+  use shr_strconvert_mod, only: toString
 
-  use, intrinsic :: iso_fortran_env, only: output_unit
+  use, intrinsic :: iso_fortran_env, only: output_unit, error_unit
 
   implicit none
   private
@@ -31,9 +27,6 @@ module shr_log_mod
 
 ! !PUBLIC MEMBER FUNCTIONS:
 
-  !public :: shr_log_errMsg
-  !public :: shr_log_OOBMsg
-  !public :: shr_log_setLogUnit
   public :: shr_log_getLogUnit
 
 ! !PUBLIC DATA MEMBERS:

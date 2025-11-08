@@ -17,7 +17,7 @@ program paleoinsolation
   use orb, only : orbpar
   use insol, only : insolation
   use shr_kind_mod, only : SHR_KIND_R8, SHR_KIND_IN
-  use shr_orb_mod, only : shr_orb_params, SHR_ORB_UNDEF_INT
+  use shr_orb_mod, only : shr_orb_params, SHR_ORB_UNDEF_INT, SHR_ORB_UNDEF_REAL
   implicit none
 
   ! some constants
@@ -57,9 +57,9 @@ program paleoinsolation
   print *,'--------------------------------------------------------------------------------'
   ! the readdata function also allocates these variables
   ! so make sure to deallocate at the end!
-!!$  call readdata("dat/PT-ZB18a_1-1.dat", time, ecc, obl, prec, lpx, climprec)
+  call readdata("dat/PT-ZB18a_1-1.dat", time, ecc, obl, prec, lpx, climprec)
   ! instead, we can read from binary files if speed is important
-  call readbindata("dat/PT-ZB18a_1-1.bin", time, ecc, obl, prec, lpx, climprec)
+!!$  call readbindata("dat/PT-ZB18a_1-1.bin", time, ecc, obl, prec, lpx, climprec)
   print *, 'read snvec ZB18a(1,1) astronomical solution'
   ! alternatively, for ZB20a
   ! call readdata('dat/PT-ZB20a_1-1.dat', time, ecc, obl, prec, lpx, climprec)
@@ -75,9 +75,6 @@ program paleoinsolation
   ! interpolate astronomical solution to a single calendar year
   ! set desired year
   !yearBP =    -800000.0_dp ! i.e. -8 Ma = 8 kyr into the future, should throw
-  !yearBP =  301000000.0_dp ! i.e. 301 Ma , should throw because we're using 300-0 Ma input solution
-!!$  yearBP =     800000.0_dp ! i.e. 8 ka
-!!$  yearBP =   66000000.0_dp ! i.e. 66 Ma should warn, outside of -58 Ma
   yearBP = 0._dp ! J2000.0
   ! convert from year before present to calendar year
   ! the model output has t0 = J2000.0
@@ -86,20 +83,10 @@ program paleoinsolation
   ! or set years directly
 !!$  yearCE = 1990
 !!$  yearCE = 2100 ! this will throw, because we did not calculate for the future.
+
   call orbpar(yearCE,ecc1,obl1,lpx1)
   print *,'linearly interpolated astronomical solution at ',yearBP,' BP'
-!!$  print *,'linearly interpolated astronomical solution at ',yearBP*1.0e-6_dp,' Ma'
-  ! convert from radians to degrees
-  obl1_deg = obl1 * R2D
-  lpx1_deg = lpx1 * R2D
-  print *, 'eccentricity: ', ecc1, '[-]'
-  print *, 'obliquity:    ', obl1_deg, '°'
-  print *, 'longitude of perihelion w/ respect to moving equinox − 180°: ', lpx1_deg, '°'
-
-  print *,'--------------------------------------------------------------------------------'
-  print *,'using orbinterp -> updated to saving version'
-  call orbpar(yearCE,ecc1,obl1,lpx1)
-!!$  print *,'linearly interpolated astronomical solution at ',yearBP,' BP'
+  print *,'linearly interpolated astronomical solution at ',yearBP*1.0e-6_dp,' Ma'
   ! convert from radians to degrees
   obl1_deg = obl1 * R2D
   lpx1_deg = lpx1 * R2D
@@ -111,30 +98,41 @@ program paleoinsolation
 
   print *,'using shr_orb_params'
   ! same but implemented with the ESCOMP/CDEPS API
-  iyear_AD = yearBP + 2000_SHR_KIND_IN
-  call shr_orb_params(iyear_AD,eccen,obliq,mvelp,obliqr,lambm0,mvelpp,.true.) ! the thing that does the work
-  print *,'linearly interpolated astronomical solution at ',yearBP*1.0e-6_dp,' Ma'
+  iyear_AD = -yearBP + 2000_SHR_KIND_IN
+  call shr_orb_params(iyear_AD,eccen,obliq,mvelp,obliqr,lambm0,mvelpp,.true.)
+  print *,'linearly interpolated astronomical solution at ',iyear_AD,' CE'
   print *,'using shr_orb_params'
-  print *, 'eccen:  ', eccen, '[-]'
-  print *, 'obliq:  ', obliq, '°'
-  print *, 'mvelp:  ', mvelp, 'rad'
-  print *, 'obliqr: ', obliqr, 'rad'
-!!$  print *, 'lambm0: ', lambm0 ! not used!!
-  print *, 'mvelpp: ', mvelpp, 'rad'
 
-!!$  ! a check to see that it still returns correct values
-!!$  iyear_AD = SHR_ORB_UNDEF_INT
-!!$  eccen = 0.0255_SHR_KIND_R8
-!!$  obliq = 23.52866_SHR_KIND_R8
-!!$  mvelp = 223.677_SHR_KIND_R8
-!!$  call shr_orb_params(iyear_AD, eccen, obliq, mvelp,obliqr,lambm0,mvelpp,.true.)
-!!$  print *,'test if shr_orb_params works with pre-set values'
-!!$  print *, 'eccen: (0.0255) = ', eccen
-!!$  print *, 'obliq: (23.52866) = ', obliq
-!!$  print *, 'mvelp: (223.677) = ', mvelp
-!!$  print *, 'obliqr: ', obliqr
-!!$  print *, 'lambm0: ', lambm0
-!!$  print *, 'mvelpp: ', mvelpp
+  ! tests
+  ! test just passing the parameters for J2000.0
+  iyear_AD = SHR_ORB_UNDEF_INT
+  call shr_orb_params(iyear_AD,eccen,obliq,mvelp,obliqr,lambm0,mvelpp,.true.) ! just specify first parameters, then calculate remainder
+  ! check if unreasonable checks work
+!!$  obliq = SHR_ORB_UNDEF_REAL
+!!$  call shr_orb_params(iyear_AD,eccen,obliq,mvelp,obliqr,lambm0,mvelpp,.true.)
+!!$  obliq = -91.0_SHR_KIND_R8 ! too low
+!!$  call shr_orb_params(iyear_AD,eccen,obliq,mvelp,obliqr,lambm0,mvelpp,.true.)
+!!$  obliq = 91.0_SHR_KIND_R8 ! too high
+!!$  call shr_orb_params(iyear_AD,eccen,obliq,mvelp,obliqr,lambm0,mvelpp,.true.)
+!!$  eccen = -0.1_SHR_KIND_R8
+!!$  call shr_orb_params(iyear_AD,eccen,obliq,mvelp,obliqr,lambm0,mvelpp,.true.)
+!!$  eccen = 0.11_SHR_KIND_R8
+!!$  call shr_orb_params(iyear_AD,eccen,obliq,mvelp,obliqr,lambm0,mvelpp,.true.)
+!!$  mvelp = -0.1_SHR_KIND_R8
+!!$  call shr_orb_params(iyear_AD,eccen,obliq,mvelp,obliqr,lambm0,mvelpp,.true.)
+!!$  mvelp = 360.1_SHR_KIND_R8
+!!$  call shr_orb_params(iyear_AD,eccen,obliq,mvelp,obliqr,lambm0,mvelpp,.true.)
+  ! these should error:
+!!$  call shr_orb_params(-300002001_SHR_KIND_IN,eccen,obliq,mvelp,obliqr,lambm0,mvelpp,.true.) ! past >300 Ma
+!!$  call shr_orb_params(      2001_SHR_KIND_IN,eccen,obliq,mvelp,obliqr,lambm0,mvelpp,.true.) ! future
+  ! these should warn
+  iyear_AD = -65998000_SHR_KIND_IN
+  call shr_orb_params(iyear_AD,eccen,obliq,mvelp,obliqr,lambm0,mvelpp,.true.) ! 66 Ma, warn ZB18a
+  iyear_AD = -82998000_SHR_KIND_IN
+  call shr_orb_params(iyear_AD,eccen,obliq,mvelp,obliqr,lambm0,mvelpp,.true.) ! 83 Ma, warn ZB18a and ZB20a
+  ! this should run without warnings/errors
+  iyear_AD = -8000_SHR_KIND_IN
+  call shr_orb_params(iyear_AD,eccen,obliq,mvelp,obliqr,lambm0,mvelpp,.true.) ! 10 ka, within bounds
 
   print *,'--------------------------------------------------------------------------------'
   ! calculate 65°N summer insolation for all timesteps in the astronomical solution
@@ -143,11 +141,17 @@ program paleoinsolation
   S0 = 1360.7_dp ! the input total insolation
 
   allocate(sixtyfive(n))
+  ! note that the orb routine from above flips lpx already
+  ! whereas the shr_orb_mod routine provides both mvelp (deg) and +pi: mvelpp (rad).
+  ! for the insolation calculation we need the 
   sixtyfive = insolation(ecc, obl, modulo(lpx - pi, 2.0_dp*pi), long, lat, S0)
   print *, 'calculated 65°N summer insolation at all timesteps in astronomical solution'
   call writedata("out/ZB18a_insolation.dat", time,ecc,obl,prec,lpx,climprec,sixtyfive)
   print *, 'wrote 65°N summer insolation to file'
-
+  print *,'--------------------------------------------------------------------------------'
+  print *, 'calculated 65°N peak summer insolation for last srh_orb_param timestep:'
+  print *, 'year: ', iyear_AD
+  print *, 'insolation: ', insolation(eccen, obliqr, mvelpp, long, lat, S0)
   print *,'--------------------------------------------------------------------------------'
   ! see if linear interpolation results in weird kinks
   ! to make sure we're OK without fancier interpolation
@@ -197,100 +201,101 @@ program paleoinsolation
 !!$  close(io)
 !!$  print *, 'wrote linearly interpolated orbital forcing to file'
 
-  print *, 'interpolating solution for past 40 kyr to check'
-  n = 421
-  ! re-use previously allocatable sixtyfive vector
-  deallocate(sixtyfive)
-  allocate(sixtyfive(n))
-
-  allocate(interpolate_time(n))
-  allocate(interpolate_ecc(n))
-  allocate(interpolate_obl(n))
-  allocate(interpolate_lpx(n))
-  yAD = -40000._dp - 100._dp
-  do i=1,n
-     print *, 'yearAD =', yAD+i*100
-     interpolate_time(i) = yAD+i*100
-     call orbpar(real(yAD+i*100, kind = 8),interpolate_ecc(i),interpolate_obl(i),interpolate_lpx(i))
-  end do
-  print *, 'interpolated to times between', yAD+100, ' and ', yAD+n*100, ' AD, in ', 100, ' yr steps'
-  long = pi / 2._dp
-  lat = 65._dp / R2D !pi / 180._dp
-  S0 = 1360.7_dp ! the input total insolation
-  sixtyfive = insolation(interpolate_ecc, interpolate_obl, interpolate_lpx, long, lat, S0)
-
-  open(unit=io, file = 'out/interp_-40000.dat', status="replace", action="write")
-  do i=1,n
-     write(io,*) interpolate_time(i), interpolate_ecc(i), interpolate_obl(i), modulo(interpolate_lpx(i)-pi,2.0_dp*pi), sixtyfive(i)
-  enddo
-  close(io)
-  print *, 'wrote linearly interpolated orbital forcing to file'
-
-  print *,'--------------------------------------------------------------------------------'
-
-  print *, 'interpolating solution from 250 kyr'
-  n = 421
-  ! re-use previously allocatable vectors
-  deallocate(sixtyfive)
-  deallocate(interpolate_time)
-  deallocate(interpolate_ecc)
-  deallocate(interpolate_obl)
-  deallocate(interpolate_lpx)
-
-  allocate(sixtyfive(n))
-  allocate(interpolate_time(n))
-  allocate(interpolate_ecc(n))
-  allocate(interpolate_obl(n))
-  allocate(interpolate_lpx(n))
-  yAD = -250000.0_dp - 100.0_dp
-  do i=1,n
-     print *, 'yearAD =', yAD+i*100
-     interpolate_time(i) = yAD+i*100
-     call orbpar(real(yAD+i*100, kind = 8),interpolate_ecc(i),interpolate_obl(i),interpolate_lpx(i))
-  end do
-  print *, 'interpolated to times between', yAD+100, ' and ', yAD+n*100, ' AD, in ', 100, ' yr steps'
-  long = pi / 2._dp
-  lat = 65._dp / R2D !pi / 180._dp
-  S0 = 1360.7_dp ! the input total insolation
-  sixtyfive = insolation(interpolate_ecc, interpolate_obl, interpolate_lpx, long, lat, S0)
-
-  open(unit=io, file = 'out/interp_-250_-170.dat', status="replace", action="write")
-  do i=1,n
-     write(io,*) interpolate_time(i), interpolate_ecc(i), interpolate_obl(i), modulo(interpolate_lpx(i)-pi,2.0_dp*pi), sixtyfive(i)
-  enddo
-  close(io)
-  print *, 'wrote linearly interpolated orbital forcing to file'
-
-  print *,'--------------------------------------------------------------------------------'
-
-  ! calculate insolation for a grid of latitudes and longitudes
-  ! this is how we can use it for multiple longitudes and latitudes
-  longs = [0._dp, pi / 2._dp, pi, 1.5_dp * pi, 2._dp * pi]
-  lats = [-90._dp, -60._dp, -30._dp, 0._dp, 30._dp, 60._dp, 90._dp] / R2D
+!!$  print *, 'interpolating solution for past 40 kyr to check'
+!!$  n = 421
+!!$  ! re-use previously allocatable sixtyfive vector
+!!$  deallocate(sixtyfive)
+!!$  allocate(sixtyfive(n))
 !!$
-  n=size(time)
-  ! for all the timesteps in the astronomical solution
-  allocate(latlons(n, 5, 7))
-  do i = 1, 5
-     do j = 1, 7
-        latlons(:,i,j) = insolation(ecc, obl, lpx, longs(i), lats(j), S0)
-     end do
-  end do
-  print *, 'calculated insolation at a grid of solar longitudes'
-  print *,' and Earth’s latitudes for all timesteps in astronomical solution'
+!!$  allocate(interpolate_time(n))
+!!$  allocate(interpolate_ecc(n))
+!!$  allocate(interpolate_obl(n))
+!!$  allocate(interpolate_lpx(n))
+!!$  yAD = -40000._dp - 100._dp
+!!$  do i=1,n
+!!$     print *, 'yearAD =', yAD+i*100
+!!$     interpolate_time(i) = yAD+i*100
+!!$     call orbpar(real(yAD+i*100, kind = 8),interpolate_ecc(i),interpolate_obl(i),interpolate_lpx(i))
+!!$  end do
+!!$  print *, 'interpolated to times between', yAD+100, ' and ', yAD+n*100, ' AD, in ', 100, ' yr steps'
+!!$  long = pi / 2._dp
+!!$  lat = 65._dp / R2D !pi / 180._dp
+!!$  S0 = 1360.7_dp ! the input total insolation
+!!$  sixtyfive = insolation(interpolate_ecc, interpolate_obl, interpolate_lpx, long, lat, S0)
 !!$
-  !> write only the insolation at t0 to file as a matrix
-  open(unit=42, file='out/insgrid.dat')
-  do j=1, 7
-        write(42,*) latlons(1,1,j), latlons(1,2,j), latlons(1,3,j), latlons(1,4,j), latlons(1,5,j)
-  enddo
-  close(42)
-  print *, 'wrote the grid of insolation at t0 to out/insgrid.dat'
-  ! TODO: write this to a netCDF file instead?
-  print *,'--------------------------------------------------------------------------------'
+!!$  open(unit=io, file = 'out/interp_-40000.dat', status="replace", action="write")
+!!$  do i=1,n
+!!$     write(io,*) interpolate_time(i), interpolate_ecc(i), interpolate_obl(i), modulo(interpolate_lpx(i)-pi,2.0_dp*pi), sixtyfive(i)
+!!$  enddo
+!!$  close(io)
+!!$  print *, 'wrote linearly interpolated orbital forcing to file'
+!!$
+!!$  print *,'--------------------------------------------------------------------------------'
+!!$
+!!$  print *, 'interpolating solution from 250 kyr'
+!!$  n = 421
+!!$  ! re-use previously allocatable vectors
+!!$  deallocate(sixtyfive)
+!!$  deallocate(interpolate_time)
+!!$  deallocate(interpolate_ecc)
+!!$  deallocate(interpolate_obl)
+!!$  deallocate(interpolate_lpx)
+!!$
+!!$  allocate(sixtyfive(n))
+!!$  allocate(interpolate_time(n))
+!!$  allocate(interpolate_ecc(n))
+!!$  allocate(interpolate_obl(n))
+!!$  allocate(interpolate_lpx(n))
+!!$  yAD = -250000.0_dp - 100.0_dp
+!!$  do i=1,n
+!!$     print *, 'yearAD =', yAD+i*100
+!!$     interpolate_time(i) = yAD+i*100
+!!$     call orbpar(real(yAD+i*100, kind = 8),interpolate_ecc(i),interpolate_obl(i),interpolate_lpx(i))
+!!$  end do
+!!$  print *, 'interpolated to times between', yAD+100, ' and ', yAD+n*100, ' AD, in ', 100, ' yr steps'
+!!$  long = pi / 2._dp
+!!$  lat = 65._dp / R2D !pi / 180._dp
+!!$  S0 = 1360.7_dp ! the input total insolation
+!!$  sixtyfive = insolation(interpolate_ecc, interpolate_obl, interpolate_lpx, long, lat, S0)
+!!$
+!!$  open(unit=io, file = 'out/interp_-250_-170.dat', status="replace", action="write")
+!!$  do i=1,n
+!!$     write(io,*) interpolate_time(i), interpolate_ecc(i), interpolate_obl(i), modulo(interpolate_lpx(i)-pi,2.0_dp*pi), sixtyfive(i)
+!!$  enddo
+!!$  close(io)
+!!$  print *, 'wrote linearly interpolated orbital forcing to file'
+!!$
+!!$  print *,'--------------------------------------------------------------------------------'
+!!$
+!!$  ! calculate insolation for a grid of latitudes and longitudes
+!!$  ! this is how we can use it for multiple longitudes and latitudes
+!!$  longs = [0._dp, pi / 2._dp, pi, 1.5_dp * pi, 2._dp * pi]
+!!$  lats = [-90._dp, -60._dp, -30._dp, 0._dp, 30._dp, 60._dp, 90._dp] / R2D
 
+!!$  n=size(time)
+!!$  ! for all the timesteps in the astronomical solution
+!!$  allocate(latlons(n, 5, 7))
+!!$  do i = 1, 5
+!!$     do j = 1, 7
+!!$        latlons(:,i,j) = insolation(ecc, obl, lpx, longs(i), lats(j), S0)
+!!$     end do
+!!$  end do
+!!$  print *, 'calculated insolation at a grid of solar longitudes'
+!!$  print *,' and Earth’s latitudes for all timesteps in astronomical solution'
+
+!!$  !> write only the insolation at t0 to file as a matrix
+!!$  open(unit=42, file='out/insgrid.dat')
+!!$  do j=1, 7
+!!$        write(42,*) latlons(1,1,j), latlons(1,2,j), latlons(1,3,j), latlons(1,4,j), latlons(1,5,j)
+!!$  enddo
+!!$  close(42)
+!!$  print *, 'wrote the grid of insolation at t0 to out/insgrid.dat'
+!!$  ! TODO: write this to a netCDF file instead?
+!!$  print *,'--------------------------------------------------------------------------------'
+!!$
   deallocate(time, ecc, obl, prec, lpx, climprec)
-  deallocate(sixtyfive, latlons)
-  deallocate(interpolate_time, interpolate_ecc, interpolate_obl, interpolate_lpx)
+  deallocate(sixtyfive)
+!!$  deallocate(latlons)
+!!$  deallocate(interpolate_time, interpolate_ecc, interpolate_obl, interpolate_lpx)
 
 end program paleoinsolation

@@ -19,6 +19,8 @@ contains
 !> could be easily incorporated into
 !> https://github.com/CESM-Development/paleoToolkit/blob/master/PaleoCalAdjust/f90/modules/GISS_orbpar_subs.f90
 !> 
+!> NOTE: this function defines lpx already as + 180!
+!> see https://bb.cgd.ucar.edu/cesm/threads/orb_mvelp.3775/
 subroutine orbpar(yearCE,ecc,obl,lpx)
   real(dp), intent(in) :: yearCE
   real(dp), intent(out) :: ecc, obl, lpx

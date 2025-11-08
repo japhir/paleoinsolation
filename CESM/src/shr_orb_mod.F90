@@ -13,6 +13,8 @@ MODULE shr_orb_mod
   !----------------------------------------------------------------------------
   ! PUBLIC: Interfaces and global data
   !----------------------------------------------------------------------------
+  public :: shr_orb_azimuth
+  public :: shr_orb_cosinc
   public :: shr_orb_cosz
   public :: shr_orb_params
   public :: shr_orb_decl
@@ -49,6 +51,62 @@ CONTAINS
   END SUBROUTINE set_constant_zenith_angle_deg
 
   !=======================================================================
+  real(SHR_KIND_R8) pure function shr_orb_azimuth(jday,lat,lon,declin,z)
+
+    !----------------------------------------------------------------------------
+    !
+    ! function returns the solar azimuth angle.
+    ! azimuth angle is defined with respect to north, positive to east
+    ! based on Sproul, Renewable Energy, 2007
+    !
+    !----------------------------------------------------------------------------
+    real   (SHR_KIND_R8),intent(in) :: jday   ! Julian cal day (1.xx to 365.xx)
+    real   (SHR_KIND_R8),intent(in) :: lat    ! Centered latitude  (radians)
+    real   (SHR_KIND_R8),intent(in) :: lon    ! Centered longitude (radians)
+    real   (SHR_KIND_R8),intent(in) :: declin ! Solar declination  (radians)
+    real   (SHR_KIND_R8),intent(in) :: z      ! Solar zenith angle (radians)
+    
+    real(SHR_KIND_R8) :: hour_angle
+    !----------------------------------------------------------------------------
+   
+    hour_angle = 2.0_SHR_KIND_R8*pi*((jday-floor(jday)) - 0.5_SHR_KIND_R8) + lon
+
+    ! constrain hour_angle to [-pi,pi] to determine east/west below
+    if(hour_angle > pi) hour_angle = hour_angle - 2.0_SHR_KIND_R8*pi
+
+    shr_orb_azimuth = (sin(declin)*cos(lat) - cos(declin)*sin(lat)*cos(hour_angle))/ sin(z)
+    
+    shr_orb_azimuth = max(-1._SHR_KIND_R8, min(shr_orb_azimuth, 1._SHR_KIND_R8))
+
+    shr_orb_azimuth = acos(shr_orb_azimuth)
+
+    ! azimuth is east for times between midnight and noon (h < 0)
+    ! azimuth is west for times between noon and midnight (h > 0)
+    if(hour_angle > 0.) shr_orb_azimuth = 2.0_SHR_KIND_R8*pi - shr_orb_azimuth
+    
+  end function shr_orb_azimuth
+  
+  !=======================================================================
+  real(SHR_KIND_R8) pure function shr_orb_cosinc(z,azimuth,beta,aspect)
+    
+    !----------------------------------------------------------------------------
+    !
+    ! Returns incidence angle to local surface
+    !
+    !----------------------------------------------------------------------------
+    real   (SHR_KIND_R8),intent(in) :: z            ! Solar zenith angle (radians)
+    real   (SHR_KIND_R8),intent(in) :: azimuth      ! Solar azimuth angle (radians)
+    real   (SHR_KIND_R8),intent(in) :: beta         ! Surface slope angle (radians)
+    real   (SHR_KIND_R8),intent(in) :: aspect       ! Surface azimuth angle (radians)
+    
+    !----------------------------------------------------------------------------
+    
+    shr_orb_cosinc = sin(beta)*sin(z)*cos(aspect - azimuth) + cos(beta)*cos(z)
+    
+    shr_orb_cosinc = max(-1._SHR_KIND_R8, min(shr_orb_cosinc, 1._SHR_KIND_R8))
+    
+  end function shr_orb_cosinc
+
   !=======================================================================
 
   real(SHR_KIND_R8) pure FUNCTION shr_orb_cosz(jday,lat,lon,declin,dt_avg,uniform_angle)
@@ -239,7 +297,6 @@ CONTAINS
   ! Kocken, I.J. and Zeebe, R.E. (2025). ESS Open Archive.
   ! doi: 10.22541/essoar.175511741.18639670
   ! https://github.com/japhir/paleoinsolation
-  ! Date:            2024-12-19
   !===============================================================================
   SUBROUTINE shr_orb_params( iyear_AD, eccen, obliq, mvelp, &
      & obliqr, lambm0, mvelpp, log_print )
@@ -268,9 +325,11 @@ CONTAINS
     !
     !------------------------------Code history-------------------------------------
     !
-    ! Original Author: Ilja J. Kocken
-    ! Date:            2024-12-19
-    ! Replacement for Berger routines, which where an adaptation of API by Erik Kluzek, 1997
+    ! Original Author: Erik Kluzek
+    ! Date:            Oct/97
+    ! Major overhaul to support ZB18a(1,1) and ZB20a(1,1) orbital solutions:
+    ! Author:          Ilja J. Kocken
+    ! Date:            2025-11-06
     !
     !-------------------------------------------------------------------------------
 
@@ -288,20 +347,22 @@ CONTAINS
 
     !------------------------------ Parameters ----------------------------------
     real   (SHR_KIND_R8) :: degrad = pi/180._SHR_KIND_R8   ! degree to radian conversion factor
-    real   (SHR_KIND_R8) :: yb4_1950AD         ! number of years before 1950 AD
+    real   (SHR_KIND_R8) :: yb4_J2000         ! number of years before J2000.0
 
     character(len=*),parameter :: subname = '(shr_orb_params)'
-
+    !---------------------------Local variables----------------------------------
+    real(SHR_KIND_R8), dimension(:), allocatable :: times, eccs, obls, precs, lpxs, climprecs
+    real   (SHR_KIND_R8) :: frac, time_kyr
+    integer(SHR_KIND_IN) :: n, ipos
+    real   (SHR_KIND_R8) :: beta    ! Intermediate argument for lambm0
+    real   (SHR_KIND_R8) :: eccen2  ! eccentricity squared
+    real   (SHR_KIND_R8) :: eccen3  ! eccentricity cubed
+    integer              :: s_logunit
     !-------------------------- Formats -----------------------------------------
     character(len=*),parameter :: F00 = "('(shr_orb_params) ',4a)"
     character(len=*),parameter :: F01 = "('(shr_orb_params) ',a,i9)"
     character(len=*),parameter :: F02 = "('(shr_orb_params) ',a,f6.3)"
     character(len=*),parameter :: F03 = "('(shr_orb_params) ',a,es14.6)"
-
-    !-------------------------- data interpolation ------------------------------
-    real(SHR_KIND_R8), dimension(:), allocatable :: times, eccs, obls, precs, lpxs, climprecs
-    real   (SHR_KIND_R8) :: frac, time_kyr
-    integer(SHR_KIND_IN) :: n, ipos
 
     !----------------------------------------------------------------------------
     ! radinp and algorithms below will need a degree to radian conversion factor
@@ -341,31 +402,37 @@ CONTAINS
           write(s_logunit,F03) 'Input mvelp unreasonable: ' , mvelp
           call shr_sys_abort(subname//' ERROR: unreasonable mvelp')
        end if
-
+       ! calculate obliquity in radians
+       obliqr = obliq*degrad
     ELSE  ! Otherwise calculate based on years before present
+
+       ! this is the model year in kyr for interpolation
+       yb4_J2000 = (real(iyear_AD,SHR_KIND_R8) - 2000.0_SHR_KIND_R8)
+       time_kyr = yb4_J2000*1.0e-3_SHR_KIND_R8
 
        if ( log_print ) then
           write(s_logunit,F01) 'Calculate orbit for year: ' , iyear_AD
+          write(s_logunit,F03) 'Model time in kyr: ' , time_kyr
        end if
-       yb4_1950AD = 1950.0_SHR_KIND_R8 - real(iyear_AD,SHR_KIND_R8)
-       if ( yb4_1950AD .lt. -300000000.0_SHR_KIND_R8 )then
-          write(s_logunit,F00) 'orbit only available for years -300.000.000'
-          write(s_logunit,F00) 'Relative to 1950 AD'
-          write(s_logunit,F00) 'ZB18a eccentricity has been verified with Geological data up to 58 Ma.'
-          write(s_logunit,F00) 'ZB20a eccentricity has been verified with Geological data up to 71 Ma.'
-          write(s_logunit,F03) '# of years before 1950: ',yb4_1950AD
+
+       if ((time_kyr .lt. -300000.0_SHR_KIND_R8) .or. (time_kyr .gt. 0.0_SHR_KIND_R8))then
+          write(s_logunit,F00) 'orbit only available for years -300,000,000 to 0'
+          write(s_logunit,F00) 'Relative to J2000.0'
+          write(s_logunit,F03) '# of years before J2000: ',yb4_J2000
           write(s_logunit,F01) 'Year to simulate was  : ',iyear_AD
           call shr_sys_abort(subname//' ERROR: unreasonable year')
        end if
-       if ( yb4_1950AD .lt. -58000000.0_SHR_KIND_R8)then
+       ! TODO: you could comment out either of these checks, depending on which solution you use
+       if ( time_kyr .lt. -58000.0_SHR_KIND_R8)then
           write(s_logunit,F00) 'Caution: For ZB18a, the interval -300 Myr to -58 Myr is unconstrained due to solar system chaos.'
+       end if
+       if ( time_kyr .lt. -71000.0_SHR_KIND_R8)then
           write(s_logunit,F00) 'Caution: For ZB20a, the interval -300 Myr to -71 Myr is unconstrained due to solar system chaos.'
        end if
-
        ! get orbital solution ZB18a(1,1) or ZB20a(1,1)
        ! TODO: update this line to your liking!
        call readdata('dat/PT-ZB18a_1-1.dat', times, eccs, obls, precs, lpxs, climprecs)
-       !call readdata('/your/path/to/datafile/PT-ZB18a_1-1.dat', times, eccs, obls, precs, lpxs, climprecs) ! update path
+       !call readdata('/path/to/my_cesm_sandbox/orb/dat/PT-ZB18a_1-1.dat', times, eccs, obls, precs, lpxs, climprecs) ! update path
        !call readdata('dat/PT-ZB20a_1-1.dat', times, eccs, obls, precs, lpxs, climprecs) ! update solution
        !call readbindata('dat/PT-ZB20a_1-1.bin', times, eccs, obls, precs, lpxs, climprecs) ! use binary files
        n = size(times)
@@ -375,9 +442,6 @@ CONTAINS
        ! this is approximately 1977-01-01 at 00:00:32 (web tool conversion)
        ! However, t0 was set to J2000.0 when initial conditions were calculated.
        ! also: model years are negative, but yearCE is positive
-
-       ! this is the model year in kyr for interpolation
-       time_kyr = (real(iyear_AD,SHR_KIND_R8) - 2000.0_SHR_KIND_R8)*1.0e-3_SHR_KIND_R8
 
        ipos = locate(times,time_kyr)
        if(ipos == -1) then
@@ -393,14 +457,59 @@ CONTAINS
        eccen = eccs(ipos) + frac * (eccs(ipos+1) - eccs(ipos))
        obliqr = obls(ipos) + frac * (obls(ipos+1) - obls(ipos))
        ! prec = linear_interpolation(times,precs,time_kyr)
-       mvelp = lpxs(ipos) + frac * (lpxs(ipos+1) - lpxs(ipos))
+       ! snvec currently provides this in radians, convert to degrees for consistency
+       mvelp = (lpxs(ipos) + frac * (lpxs(ipos+1) - lpxs(ipos))) / degrad
 
+       ! Cases to make sure mvelp is between 0 and 360.
+
+       do while (mvelp .lt. 0.0_SHR_KIND_R8)
+          mvelp = mvelp + 360.0_SHR_KIND_R8
+       end do
+       do while (mvelp .ge. 360.0_SHR_KIND_R8)
+          mvelp = mvelp - 360.0_SHR_KIND_R8
+       end do
+       ! calculate obliquity in degrees
        obliq = obliqr / degrad
 
-       lambm0 = SHR_ORB_UNDEF_REAL
-       mvelpp = modulo(mvelp + pi, 2.0_SHR_KIND_R8*pi)
+    END IF  ! end of test on whether to calculate or use input orbital params
 
-    END IF
+    ! 180 degrees must be added to mvelp since observations are made from the
+    ! earth and the sun is considered (wrongly for the algorithm) to go around
+    ! the earth. For a more graphic explanation see Appendix B in:
+    !
+    ! A. Berger, M. Loutre and C. Tricot. 1993.  Insolation and Earth Orbital
+    ! Periods.  J. of Geophysical Research 98:10,341-10,362.
+    !
+    ! Additionally, orbit will need this value in radians. So mvelp becomes
+    ! mvelpp (mvelp plus pi)
+
+    mvelpp = (mvelp + 180._SHR_KIND_R8)*degrad
+
+    ! Set up arguments used several times in lambm0 calculation ahead.
+
+    eccen2 = eccen*eccen
+    eccen3 = eccen2*eccen
+    beta = sqrt(1._SHR_KIND_R8 - eccen2)
+
+    ! The mean longitude at the vernal equinox (lambda m nought in Berger
+    ! 1978; in radians) is calculated from the following formula given in
+    ! Berger 1978.  At the vernal equinox the true longitude (lambda in Berger
+    ! 1978) is 0.
+
+    lambm0 = 2._SHR_KIND_R8*((.5_SHR_KIND_R8*eccen + .125_SHR_KIND_R8*eccen3)*(1._SHR_KIND_R8 + beta)*sin(mvelpp)  &
+         &      - .250_SHR_KIND_R8*eccen2*(.5_SHR_KIND_R8    + beta)*sin(2._SHR_KIND_R8*mvelpp)            &
+         &      + .125_SHR_KIND_R8*eccen3*(1._SHR_KIND_R8/3._SHR_KIND_R8 + beta)*sin(3._SHR_KIND_R8*mvelpp))
+
+    if ( log_print ) then
+       write(s_logunit,F03) '------ Computed Orbital Parameters ------'
+       write(s_logunit,F03) 'Eccentricity      = ',eccen
+       write(s_logunit,F03) 'Obliquity (deg)   = ',obliq
+       write(s_logunit,F03) 'Obliquity (rad)   = ',obliqr
+       write(s_logunit,F03) 'Long of perh(deg) = ',mvelp
+       write(s_logunit,F03) 'Long of perh(rad) = ',mvelpp
+       write(s_logunit,F03) 'Long at v.e.(rad) = ',lambm0
+       write(s_logunit,F03) '-----------------------------------------'
+    end if
 
   END SUBROUTINE shr_orb_params
 
