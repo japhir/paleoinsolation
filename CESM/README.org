@@ -13,7 +13,7 @@ Kocken, I.J.  and Zeebe, R.E. (2025). New Insolation Forcing for Paleoclimate St
 * Implementation in CESM
 We aim to make implementation in the Community Earth System Model as easy as possible.
 
-We replace the =shr_orb_mod.F90= file from [[https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90][ESCOMP/CDEPS/shr_orb_mod.F90]] and add necessary additional files to the same folder(s). Note that this version is slightly different from the latest version in [[https://github.com/ESCOMP/CESM_share/blob/main/src/shr_orb_mod.F90][ESCOMP/CESM_share/src/shr_orb_mod.F90]]. We have merged the latest changes from both repositories.
+We replace the =shr_orb_mod.F90= file from [[https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90][ESCOMP/CDEPS/shr_orb_mod.F90]] and add necessary data files to the same folder(s). Note that the =shr_orb_mod.F90= files differ slightly between ESCOMP/CDEPS and [[https://github.com/ESCOMP/CESM_share/blob/main/src/shr_orb_mod.F90][ESCOMP/CESM_share/src/shr_orb_mod.F90]]. Assuming that the lastest version is desired, we have merged the latest changes from both repositories.
 
 1. Find the directories that contain the file =shr_orb_mod.F90=
    #+begin_src sh
@@ -29,11 +29,15 @@ We replace the =shr_orb_mod.F90= file from [[https://github.com/ESCOMP/CDEPS/blo
    - =/path/to/my_cesm_sandbox/cime/src/share/util/shr_orb_mod.F90=
    - =/path/to/my_cesm_sandbox/components/cdeps/share/shr_orb_mod.F90=
    - =/path/to/my_cesm_sandbox/components/cice/src/csm_share/shr_orb_mod.F90=
-2. Verify if the files are the same and create a backup copy of each unique =shr_orb_mod.F90= file
+2. Verify if the files are identical and create a backup copy of each unique
+   =shr_orb_mod.F90= file to fall back on---in case of issues with our updated
+   file.
    #+begin_src sh
-   cp shr_orb_mod.F90 shr_orb_mod.F90.bak
+     diff -u /path/to/my_cesm_sandbox/share/src/shr_orb_mod.F90 /path/to/my_cesm_sandbox/cdeps/share/shr_orb_mod.F90 
+     cd share/src
+     cp shr_orb_mod.F90 shr_orb_mod.F90.bak
+     cd ../../
    #+end_src
-   to fall back on---in case of issues with the updated file.
 3. Download all the files in this repository and extract [[file:cesm_insolation.tar.gz]]
    manually (below, more control and less disk space usage)
    or directly to each of these directories. For example,
@@ -42,6 +46,9 @@ We replace the =shr_orb_mod.F90= file from [[https://github.com/ESCOMP/CDEPS/blo
    tar -xvf cesm_insolation.tar.gz --directory share/src
    tar -xvf cesm_insolation.tar.gz --directory components/cdeps/share
    #+end_src
+4. Test if it will build.
+
+
 
 To do it manually (for more control and to re-use the data files):
    1. Download the files to a central location
@@ -53,23 +60,19 @@ To do it manually (for more control and to re-use the data files):
    2. (optional) If you care about storage space and read/write speed,
       you can download the =.bin= files from our [[file:../dat/]] directory.
    3. Update our =shr_orb_mod.F90=:
-      1. Update the filepath in the line that starts with =call readdata= to
+      1. Search for =TODO= within the file.
+      2. Update the filepath in the line that starts with =call readdata= to
          the absolute directory of the astronomical solution datafile.
          This is where you choose whether you want to use =ZB18a(1,1)= (default) or =ZB20a(1,1)=.
-         (Search for =TODO= within the file).
-      2. If you decided to use binary files (step 2 above),
+      3. If you decided to use binary files (step 2 above),
          update the =call readdata= line to =call readbindata= and update the filename appropriately.
-   4. Copy our Fortran files to each directory that contains =shr_orb_mod.F90=.
+   4. Copy our Fortran file to each directory that contains =shr_orb_mod.F90=.
       For example,
       #+begin_src sh
         cd 'share/src'
-        cp '../../orb/shr_orb_mod.F90' .
-        cp '../../orb/data.F90' .
-        cp '../../orb/interp.F90' .
+        cp '/path/to/my_cesm_toolbox/orb/shr_orb_mod.F90' .
         cd '../../components/cdeps'
-        cp '../../orb/shr_orb_mod.F90' .
-        cp '../../orb/data.F90' .
-        cp '../../orb/interp.F90' .
+        cp '/path/to/my_cesm_toolbox/orb/shr_orb_mod.F90' .
         # etc.
       #+end_src
    5. Test if it will build.
