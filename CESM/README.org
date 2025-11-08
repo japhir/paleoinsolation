@@ -4,7 +4,7 @@
 
 [[https://doi.org/10.5281/zenodo.17478418][https://zenodo.org/badge/DOI/10.5281/zenodo.17478418.svg]]
 
-To facilitate using recent astronomical solutions in [[https://en.wikipedia.org/wiki/General_circulation_model][GCMs]] such as the [[https://www.cesm.ucar.edu/][CESM]], we make the ~ZB18a~ and ~ZB20a~ astronomical solutions readily available.
+To facilitate using recent astronomical solutions in [[https://en.wikipedia.org/wiki/General_circulation_model][GCMs]] such as the [[https://www.cesm.ucar.edu/][CESM]], we make the =ZB18a(1,1)= and =ZB20a(1,1)= astronomical solutions readily available.
 
 This code is the supplement to a work-in-progress paper, available as a pre-print at:
 
@@ -13,17 +13,65 @@ Kocken, I.J.  and Zeebe, R.E. (2025). New Insolation Forcing for Paleoclimate St
 * Implementation in CESM
 We aim to make implementation in the Community Earth System Model as easy as possible.
 
-1. Navigate to your local ~share/src~ directory in the CESM installation. (It should look similar to [[https://github.com/ESCOMP/CESM_share][the CESM_share repo]]).
-2. Download all the files in this repository manually (below) or download and extract the [[file:cesm_insolation.tar.gz]] to your CESM ~share/src~ directory.
-3. To do it manually:
-   1. Copy our [[file:src/data.f90]] to this directory.
-   2. Copy our [[file:src/interp.f90]] to this directory.
-   3. Create a directory to save the astronomical solution data, i.e. ~share/src/dat~.
-   4. Copy [[file:src/dat/PT-ZB18a_1-1.dat]] and (if desired) [[file:src/dat/PT-ZB20a_1-1.dat]] to this new directory. If you care about storage space and read/write speed, you can instead download the ~.bin~ files from the [[file:../dat/]] directory.
-4. Replace the ~shr_orb_mod.F90~ file with our [[file:src/shr_orb_mod.F90]].
-5. If you used a different data storage location than ~src/dat/~:
-   1. Update the filepath in the line that starts with ~call readdata~ to the directory/file that you stored the astronomical solution files in. This is where you choose whether you want to use ZB18a(1,1) or ZB20a(1,1).
-   2. If you decided to use binary files (step 6 above), update the ~call readdata~ line to ~call readbindata~ and update the filename appropriately.
-6. Test if it will build.
+We replace the =shr_orb_mod.F90= file from [[https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90][ESCOMP/CDEPS/shr_orb_mod.F90]] and add necessary additional files to the same folder(s). Note that this version is slightly different from the latest version in [[https://github.com/ESCOMP/CESM_share/blob/main/src/shr_orb_mod.F90][ESCOMP/CESM_share/src/shr_orb_mod.F90]]. We have merged the latest changes from both repositories.
+
+1. Find the directories that contain the file =shr_orb_mod.F90=
+   #+begin_src sh
+   cd /path/to/my_cesm_sandbox/
+   find . -name 'shr_orb_mod.F90'
+   #+end_src
+   For =cesm3_0_beta06=, they are located in:
+   - =/path/to/my_cesm_sandbox/share/src/shr_orb_mod.F90=
+   - =/path/to/my_cesm_sandbox/components/cdeps/share/shr_orb_mod.F90=
+   (note that these files seem to be two different versions!)
+   Note that this may differ for earlier versions: i.e. for a clean
+   [[https://github.com/ESCOMP/CESM?tab=readme-ov-file#obtaining-the-full-model-code-and-associated-scripting-infrastructure][git checkout of the release-cesm2.2.2]] the files are located here:
+   - =/path/to/my_cesm_sandbox/cime/src/share/util/shr_orb_mod.F90=
+   - =/path/to/my_cesm_sandbox/components/cdeps/share/shr_orb_mod.F90=
+   - =/path/to/my_cesm_sandbox/components/cice/src/csm_share/shr_orb_mod.F90=
+2. Verify if the files are the same and create a backup copy of each unique =shr_orb_mod.F90= file
+   #+begin_src sh
+   cp shr_orb_mod.F90 shr_orb_mod.F90.bak
+   #+end_src
+   to fall back on---in case of issues with the updated file.
+3. Download all the files in this repository and extract [[file:cesm_insolation.tar.gz]]
+   manually (below, more control and less disk space usage)
+   or directly to each of these directories. For example,
+   #+begin_src sh
+   wget https://github.com/japhir/paleoinsolation/raw/refs/heads/main/CESM/cesm_insolation.tar.gz
+   tar -xvf cesm_insolation.tar.gz --directory share/src
+   tar -xvf cesm_insolation.tar.gz --directory components/cdeps/share
+   #+end_src
+
+To do it manually (for more control and to re-use the data files):
+   1. Download the files to a central location
+      #+begin_src sh
+        wget https://github.com/japhir/paleoinsolation/raw/refs/heads/main/CESM/cesm_insolation.tar.gz
+        mkdir orb
+        tar -xvf cesm_insolation.tar.gz --directory=orb
+      #+end_src
+   2. (optional) If you care about storage space and read/write speed,
+      you can download the =.bin= files from our [[file:../dat/]] directory.
+   3. Update our =shr_orb_mod.F90=:
+      1. Update the filepath in the line that starts with =call readdata= to
+         the absolute directory of the astronomical solution datafile.
+         This is where you choose whether you want to use =ZB18a(1,1)= (default) or =ZB20a(1,1)=.
+         (Search for =TODO= within the file).
+      2. If you decided to use binary files (step 2 above),
+         update the =call readdata= line to =call readbindata= and update the filename appropriately.
+   4. Copy our Fortran files to each directory that contains =shr_orb_mod.F90=.
+      For example,
+      #+begin_src sh
+        cd 'share/src'
+        cp '../../orb/shr_orb_mod.F90' .
+        cp '../../orb/data.F90' .
+        cp '../../orb/interp.F90' .
+        cd '../../components/cdeps'
+        cp '../../orb/shr_orb_mod.F90' .
+        cp '../../orb/data.F90' .
+        cp '../../orb/interp.F90' .
+        # etc.
+      #+end_src
+   5. Test if it will build.
 
 See [[https://github.com/japhir/paleoinsolation?tab=readme-ov-file#contributing-and-troubleshooting][Contributing and Troubleshooting]] if you need help.
