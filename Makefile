@@ -11,94 +11,95 @@ AR := ar rcs
 LD := $(FC)
 RM := rm -f
 
-# list of all source files
-SRCS := src/kind.f90 \
-	src/data.f90 \
-	src/interp.f90 \
-	src/insolation.f90 \
-	src/orb.f90 \
-	src/shr_kind_mod.F90 \
-	src/shr_log_mod.F90 \
-	src/shr_strconvert_mod.F90 \
-	src/shr_const_mod.F90 \
-	src/shr_orb_mod.F90
-TEST_SRCS := src/paleoinsolation.f90
+# directories
+SRC_DIR := src
+OBJ_DIR := build
+MOD_DIR := $(OBJ_DIR)/mod
+OUT_DIR := fout
 
-# create lists of the build artefacts in this project
-OBJS := $(addsuffix .o, $(SRCS))
-TEST_OBJS := $(addsuffix .o, $(TEST_SRCS))
-LIB := $(patsubst %, lib%.a, $(NAME))
-TEST_EXE := $(patsubst %.f90, %.exe, $(TEST_SRCS))
+# compiler flags
+# FCFLAGS := -J$(MOD_DIR) -I$(MOD_DIR) -Isrc -Wall -Wextra -O2
+FCFLAGS := -J$(MOD_DIR) -I$(MOD_DIR) -Isrc -Wall -Wextra -O2
+
+# list of all source files
+SRCS := $(wildcard $(SRC_DIR)/*.f90) $(wildcard $(SRC_DIR)/*.F90)
+
+# source files
+OBJS := $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(SRCS:.f90=.o))
+OBJS := $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(OBJS:.F90=.o))
+
+# main test/executable
+MAIN := $(SRC_DIR)/paleoinsolation.f90
+LIB := lib$(NAME).a
+TEST_EXE := $(OUT_DIR)/paleoinsolation.exe
 
 # declare all public targets
 .PHONY: all solution buildsnvec runsnvec fortran insolation clean cleanall
 all: insolation
 
-# compile the fortran routines
-fortran: $(LIB) $(TEST_EXE)
+# ------------------------------------------------------------
+# Automatic Fortran deps
+# ------------------------------------------------------------
+DEPS := $(OBJ_DIR)/deps.mk
 
-# create static library from the object files
-$(LIB): $(OBJS)
+$(DEPS): $(SRCS)
+	@mkdir -p $(OBJ_DIR) $(MOD_DIR)
+	@echo "Generating Fortran dependencies → $(DEPS)"
+	@echo "# Auto-generated Fortran module dependencies" > $(DEPS).tmp; \
+	for f in $(SRCS); do \
+	  srcbase=$$(basename $$f); \
+	  obj="$(OBJ_DIR)/$${srcbase%.*}.o"; \
+	  \
+	  used_mods=$$( \
+	    awk 'BEGIN{IGNORECASE=1} \
+	         /^[[:space:]]*use[[:space:]]+/ { \
+	           mod=$$2; gsub(/,.*|[()]/,"",mod); \
+	           tolower(mod); \
+	           if (mod !~ /^iso_/ && mod != "omp_lib" && mod != "ieee_arithmetic") print mod \
+	         }' $$f | sort -u \
+	  ); \
+	  \
+	  for mod in $$used_mods; do \
+	    echo "$$obj: $(MOD_DIR)/$$mod.mod" >> $(DEPS).tmp; \
+	  done; \
+	  \
+	  defined_mods=$$( \
+	    awk 'BEGIN{IGNORECASE=1} \
+	         /^[[:space:]]*module[[:space:]]+/ && $$2 != "procedure" { \
+	           mod=$$2; gsub(/,.*/,"",mod); tolower(mod); print mod \
+	         }' $$f \
+	  ); \
+	  for mod in $$defined_mods; do \
+	    echo "$(MOD_DIR)/$$mod.mod: $$obj" >> $(DEPS).tmp; \
+	  done; \
+	done; \
+	mv $(DEPS).tmp $(DEPS)
+
+-include $(DEPS)
+
+# 
+$(LIB): $(DEPS) $(filter-out $(OBJ_DIR)/paleoinsolation.o,$(OBJS))
+	@echo "Creating $@"
 	$(AR) $@ $^
 
-# link the executable
-$(TEST_EXE): %.exe: %.f90.o $(LIB)
-	$(LD) -o $@ $^
-
 # create object files from Fortran source
-$(OBJS) $(TEST_OBJS): %.o: %
-	$(FC) -c -o $@ $<
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.f90
+	@mkdir -p $(dir $@) $(MOD_DIR)
+	@echo "Compiling $<"
+	$(FC) $(FCFLAGS) -c -o $@ $<
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.F90
+	@mkdir -p $(dir $@) $(MOD_DIR)
+	@echo "Compiling $<"
+	$(FC) $(FCFLAGS) -c -o $@ $<
 
-# define all module interdependencies
-kind.mod := src/kind.f90.o
-data.mod := src/data.f90.o
-interp.mod := src/interp.f90.o
-orb.mod := src/orb.f90.o
-insolation.mod := src/insolation.f90.o
-paleoinsolation.mod := src/paleoinsolation.f90.o
+# link and archive
+$(TEST_EXE): $(LIB)
+	@mkdir -p $(OUT_DIR)
+	@echo "Linking $@"
+	$(LD) -o $@ $(MAIN) $(FCFLAGS) $(LIB)
 
-shr_kind_mod.mod := src/shr_kind_mod.F90.o
-# shr_sys_mod.mod := src/shr_sys_mod.F90.o
-shr_const_mod.mod := src/shr_const_mod.F90.o
-
-# shr_abort_mod.mod := src/shr_abort_mod.F90.o
-# shr_sysabort => shr_abort_abort which uses ESMF_LOGWRITE, ESMF_LOGMSG_ERROR, ESMF_FINALIZE, ESMF_END_ABORT
-# emsf seems to be available from here: https://github.com/esmf-org/esmf
-shr_strconvert_mod.mod := src/shr_strconvert_mod.F90.o
-shr_log_mod.mod := src/shr_log_mod.F90.o
-shr_orb_mod.mod := src/shr_orb_mod.F90.o
-
-src/data.f90.o: $(kind.mod)
-src/interp.f90.o: $(kind.mod)
-src/insolation.f90.o: $(kind.mod)
-
-src/paleoinsolation.f90.o: $(kind.mod)
-src/paleoinsolation.f90.o: $(data.mod)
-src/paleoinsolation.f90.o: $(interp.mod)
-src/paleoinsolation.f90.o: $(orb.mod)
-src/paleoinsolation.f90.o: $(insolation.mod)
-
-# drop-in replacement for shr_orb_params in CDEPS
-src/paleoinsolation.f90.o: $(shr_orb_mod.mod)
-# https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90#L236
-
-src/shr_orb_mod.f90.o: $(shr_kind.mod)
-src/shr_orb_mod.f90.o: $(shr_const.mod)
-src/shr_orb_mod.f90.o: $(shr_log_mod.mod)
-src/shr_orb_mod.f90.o: $(data.mod)
-src/shr_orb_mod.f90.o: $(interp.mod)
-
-src/shr_strconvert_mod.f90.o: $(shr_kind_mod.mod)
-src/shr_log_mod.f90.o: $(shr_kind_mod.mod)
-src/shr_log_mod.f90.o: $(shr_strconvert_mod.mod)
-
-# drop-in replacement for orbpar in paleoToolkit
-# https://github.com/CESM-Development/paleoToolkit/blob/master/PaleoCalAdjust/f90/modules/GISS_orbpar_subs.f90
-src/orb.f90.o: $(kind.mod)
-src/orb.f90.o: $(data.mod)
-src/orb.f90.o: $(interp.mod)
-
-# end of Fortran dependencies, remainder is snvec stuff and actually running the code
+# compile the fortran routines
+fortran: $(TEST_EXE)
 
 # broad overview targets
 solution: dat/ZB18a-plan3.dat dat/ZB20a-plan3.dat
@@ -176,14 +177,13 @@ endif
 ### insolation
 # run example fortran routine to calculate insolation
 out/ZB18a_insolation.dat: out dat/PT-ZB18a_1-1.dat $(paleoinsolation.mod)
-	./src/paleoinsolation.exe
+	./fout/paleoinsolation.exe
 
 
 # cleanup, filter to avoid removing source code by accident
 clean:
-	$(RM) $(TEST_EXE)
+	$(RM) -r $(OBJ_DIR) $(OUT_DIR) $(LIB)
 	$(RM) $(wildcard out/*.dat)
-	$(RM) $(filter %.o, $(OBJS)) $(LIB) $(wildcard *.mod)
 
 cleanall: clean
 	$(RM) $(wildcard dat/*.dat)

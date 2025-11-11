@@ -29,7 +29,7 @@ subroutine orbpar(yearCE,ecc,obl,lpx)
   logical, save :: initialized = .false.
 
   real(dp) :: pi
-  real(dp) :: yearBP, time_kyr
+  real(dp) :: time_kyr
 
   integer :: n, ipos
   real(dp) :: frac
