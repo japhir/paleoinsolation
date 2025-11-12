@@ -19,7 +19,7 @@ OUT_DIR := fout
 
 # compiler flags
 # FCFLAGS := -J$(MOD_DIR) -I$(MOD_DIR) -Isrc -Wall -Wextra -O2
-FCFLAGS := -J$(MOD_DIR) -I$(MOD_DIR) -Isrc -Wall -Wextra -O2
+FCFLAGS := -J$(MOD_DIR) -I$(MOD_DIR) -Isrc
 
 # list of all source files
 SRCS := $(wildcard $(SRC_DIR)/*.f90) $(wildcard $(SRC_DIR)/*.F90)
