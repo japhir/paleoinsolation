@@ -64,9 +64,9 @@ program paleoinsolation
   read(io, *) yearCE, longr, latr, S0
   close(io)
   print *, 'yearCE: ', yearCE
-  print *, 'longr:  ', longr
-  print *, 'latr:   ', latr
-  print *, 'S0:     ', S0
+  print *, 'longr:  ', longr, '(°)'
+  print *, 'latr:   ', latr, '(°)'
+  print *, 'S0:     ', S0, ' (Wm¯²)'
 
   print *,'--------------------------------------------------------------------------------'
   ! the readdata function also allocates these variables

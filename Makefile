@@ -22,7 +22,8 @@ OUT_DIR := fout
 FCFLAGS := -J$(MOD_DIR) -I$(MOD_DIR) -Isrc
 
 # list of all source files
-SRCS := $(wildcard $(SRC_DIR)/*.f90) $(wildcard $(SRC_DIR)/*.F90)
+SRCS := $(filter-out $(SRC_DIR)/paleoinsolation.f90, \
+         $(wildcard $(SRC_DIR)/*.f90) $(wildcard $(SRC_DIR)/*.F90))
 
 # source files
 OBJS := $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(SRCS:.f90=.o))
@@ -30,7 +31,8 @@ OBJS := $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(OBJS:.F90=.o))
 
 # main test/executable
 MAIN := $(SRC_DIR)/paleoinsolation.f90
-LIB := lib$(NAME).a
+MAIN_OBJ := $(OBJ_DIR)/paleoinsolation.o
+LIB := $(OUT_DIR)/lib$(NAME).a
 TEST_EXE := $(OUT_DIR)/paleoinsolation.exe
 
 # declare all public targets
@@ -78,7 +80,8 @@ $(DEPS): $(SRCS)
 -include $(DEPS)
 
 # 
-$(LIB): $(DEPS) $(filter-out $(OBJ_DIR)/paleoinsolation.o,$(OBJS))
+$(LIB): $(DEPS) $(OBJS)
+	@mkdir -p $(OUT_DIR)
 	@echo "Creating $@"
 	$(AR) $@ $^
 
@@ -93,7 +96,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.F90
 	$(FC) $(FCFLAGS) -c -o $@ $<
 
 # link and archive
-$(TEST_EXE): $(LIB)
+$(TEST_EXE): $(LIB) $(MAIN_OBJ)
 	@mkdir -p $(OUT_DIR)
 	@echo "Linking $@"
 	$(LD) -o $@ $(MAIN) $(FCFLAGS) $(LIB)
@@ -176,9 +179,8 @@ endif
 
 ### insolation
 # run example fortran routine to calculate insolation
-out/ZB18a_insolation.dat: out dat/PT-ZB18a_1-1.dat $(paleoinsolation.mod)
-	./fout/paleoinsolation.exe
-
+out/ZB18a_insolation.dat: out dat/PT-ZB18a_1-1.dat input.txt $(TEST_EXE)
+	$(TEST_EXE)
 
 # cleanup, filter to avoid removing source code by accident
 clean:
