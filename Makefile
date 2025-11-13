@@ -55,7 +55,7 @@ $(DEPS): $(SRCS)
 	         /^[[:space:]]*use[[:space:]]+/ { \
 	           mod=$$2; gsub(/,.*|[()]/,"",mod); \
 	           tolower(mod); \
-	           if (mod !~ /^iso_/ && mod != "omp_lib" && mod != "ieee_arithmetic") print mod \
+	           if (mod !~ /^iso_fortran/) print mod \
 	         }' $$f | sort -u \
 	  ); \
 	  \
@@ -105,7 +105,7 @@ fortran: $(TEST_EXE)
 solution: dat/ZB18a-plan3.dat dat/ZB20a-plan3.dat
 buildsnvec: snvec/snvec.x
 runsnvec: dat/PT-ZB18a_1-1.dat dat/PT-ZB20a_1-1.dat
-insolation: fortran out/ZB18a_insolation.dat
+insolation: fortran out/ZB18a_insolation.dat input.txt
 
 ### solution:
 # download the orbital solution from the web

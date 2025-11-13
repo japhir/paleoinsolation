@@ -36,6 +36,9 @@ program paleoinsolation
   ! the length of time(:) etc.
   integer :: n, io
   ! desired true Solar longitude, Earth's latitude, Solar constant
+  ! in degrees
+  real(dp) :: longr, latr
+  ! in radians
   real(dp) :: long, lat, S0
 
   ! get orbital parameters at a specific calendar year
@@ -54,6 +57,16 @@ program paleoinsolation
   integer :: i, j
   real(dp), dimension(5) :: longs
   real(dp), dimension(7) :: lats
+
+  print *,'--------------------------------------------------------------------------------'
+  print *, 'reading input file input.txt'
+  open(newunit=io, file="input.txt", status="old", action="read")
+  read(io, *) yearCE, longr, latr, S0
+  close(io)
+  print *, 'yearCE: ', yearCE
+  print *, 'longr:  ', longr
+  print *, 'latr:   ', latr
+  print *, 'S0:     ', S0
 
   print *,'--------------------------------------------------------------------------------'
   ! the readdata function also allocates these variables
@@ -76,11 +89,12 @@ program paleoinsolation
   ! interpolate astronomical solution to a single calendar year
   ! set desired year
   !yearBP =    -800000.0_dp ! i.e. -8 Ma = 8 kyr into the future, should throw
-  yearBP = 0._dp ! J2000.0
+!!$  yearBP = 0._dp ! J2000.0
+  yearBP = -(yearCE - 2000._dp) ! J2000.0
   ! convert from year before present to calendar year
   ! the model output has t0 = J2000.0
   ! (but note that model years are 365.25 days long)
-  yearCE = -yearBP + 2000.0_dp
+!!$  yearCE = -yearBP + 2000.0_dp
   ! or set years directly
 !!$  yearCE = 1990
 !!$  yearCE = 2100 ! this will throw, because we did not calculate for the future.
@@ -137,9 +151,12 @@ program paleoinsolation
 
   print *,'--------------------------------------------------------------------------------'
   ! calculate 65°N summer insolation for all timesteps in the astronomical solution
-  long = pi / 2._dp
-  lat = 65._dp / R2D !pi / 180._dp
-  S0 = 1360.7_dp ! the input total insolation
+  ! TODO: long/lat in degrees!
+  long = longr / R2D
+  lat = latr / R2D
+!!$  long = pi / 2._dp
+!!$  lat = 65._dp / R2D !pi / 180._dp
+!!$  S0 = 1360.7_dp ! the input total insolation
 
   allocate(sixtyfive(n))
   ! note that the orb routine from above flips lpx already
