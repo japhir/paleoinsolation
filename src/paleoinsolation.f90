@@ -28,9 +28,20 @@ program paleoinsolation
   real(dp), parameter :: R2D = 180._dp / pi ! radians to degrees
 
   ! the variables that hold ZB18a(1,1) input
-  real(dp), allocatable :: time(:), ecc(:), obl(:), prec(:), lpx(:), climprec(:)
+  real(dp), allocatable :: &
+       time(:), &
+       ecc(:), &
+       obl(:), &
+       prec(:), &
+       lpx(:), &
+       climprec(:)
   ! insolation output
-  real(dp), allocatable :: interpolate_time(:), interpolate_ecc(:), interpolate_obl(:), interpolate_lpx(:), interpolate_insolation(:) 
+  real(dp), allocatable :: &
+       interpolate_time(:), & 
+       interpolate_ecc(:), & 
+       interpolate_obl(:), & 
+       interpolate_lpx(:), & 
+       interpolate_insolation(:)
 
 !!$  ! a grid of lat/lon to hold insolation
 !!$  real(dp), allocatable :: latlons(:,:,:)
@@ -103,11 +114,16 @@ program paleoinsolation
         yearCE = interpolate_time(i) * 1e3_dp + 2000.0_dp
         call orbpar(yearCE,interpolate_ecc(i),interpolate_obl(i),interpolate_lpx(i))
      end do
-     interpolate_insolation = insolation(interpolate_ecc, interpolate_obl, interpolate_lpx, long, lat, S0)
+     interpolate_insolation = insolation( &
+          interpolate_ecc, &
+          interpolate_obl, &
+          interpolate_lpx, &
+          long, lat, S0)
      print *, 'linearly interpolated solution'
      open(newunit=io, file = 'out/ZB18a_insolation.dat', status="replace", action="write")
      do i=1,interpolate_n
-        write(io,*) interpolate_time(i), interpolate_ecc(i), interpolate_obl(i)*R2D, modulo(interpolate_lpx(i)-pi,2.0_dp*pi)*R2D, interpolate_insolation(i)
+        write(io,*) interpolate_time(i), interpolate_ecc(i), interpolate_obl(i)*R2D, &
+             modulo(interpolate_lpx(i)-pi,2.0_dp*pi)*R2D, interpolate_insolation(i)
      enddo
      close(io)
      print *, 'wrote linearly interpolated orbital forcing to out/ZB18a_insolation.dat'
@@ -118,7 +134,12 @@ program paleoinsolation
      print *, '- longitude of perihelion with respect to the moving equinox (°)'
      print *, '- insolation for specified input parameters (Wm¯²)'
 
-     deallocate(interpolate_time, interpolate_ecc, interpolate_obl, interpolate_lpx, interpolate_insolation)
+     deallocate( &
+          interpolate_time, &
+          interpolate_ecc, &
+          interpolate_obl, &
+          interpolate_lpx, &
+          interpolate_insolation)
   else
      ! if it's 0, then we take the times in the solution this is the model year
      ! in kyr for interpolation time_kyr = (yearCE - 2000.0_dp)*1.0e-3_dp
@@ -133,7 +154,8 @@ program paleoinsolation
 
      ! print warning if time is older then well-constrained eccentricity
      if(time_start_kyr .lt. -58.0e3_dp .or. time_end_kyr .lt. -58.0e3_dp) then
-        print *, 'Caution: For ZB18a, the interval -300 Myr to -58 Myr is unconstrained due to solar system chaos.'
+        print *, 'Caution: For ZB18a, the interval -300 Myr to -58 Myr'
+        print *, 'is unconstrained due to solar system chaos.'
        !!$ print *, 'Caution: For ZB20a, the interval -300 Myr to -71 Myr is unconstrained due to solar system chaos.'
      end if
 
@@ -153,7 +175,11 @@ program paleoinsolation
      n = size(time)
      allocate(interpolate_insolation(n))
 
-     interpolate_insolation = insolation(ecc, obl, modulo(lpx - pi, 2.0_dp*pi), long, lat, S0)
+     interpolate_insolation = insolation( &
+          ecc, &
+          obl, &
+          modulo(lpx - pi, 2.0_dp*pi), &
+          long, lat, S0)
      print *, 'calculated insolation for each timestep in the solution'
      open(newunit=io, file = 'out/ZB18a_insolation.dat', status="replace", action="write")
      do i=1,n
