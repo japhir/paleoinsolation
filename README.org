@@ -16,8 +16,9 @@ We aim to make implementation in the Community Earth System Model as easy as pos
 The [[file:CESM/]] directory has all the files needed as well as a [[file:CESM/README.org]] on how to implement our code.
 
 * Details
-We provide a [[file:Makefile][Makefile]] that downloads the orbital solutions and the [[https://github.com/rezeebe/snvec][snvec C program]], [[file:snvec.patch][patches]] snvec to also output the longitude of perihelion, and then compiles and runs snvec for the past 300 Myr to create the =ZB18a(1,1)= and =ZB20a(1,1)= solutions (where the numbers in parameters refer to the dynamical ellipticity and the tidal dissipation, respectively).
+We provide a [[file:Makefile][Makefile]] that downloads the orbital solutions and the [[https://github.com/rezeebe/snvec][snvec C program]], [[file:snvec.patch][patches]] snvec to also output the longitude of perihelion, and then compiles and runs snvec for the past 300 Myr to create the =ZB18a(1,1)= and =ZB20a(1,1)= solutions (where the numbers in parameters refer to the dynamical ellipticity and the tidal dissipation, respectively). Our main Fortran program then calculates 65°N peak summer insolation for the past 1 Myr from the =ZB18a(1,1)= solution.
 
+** Orbital solutions
 Please note that intervals prior to −58 and −71 Myr (for ZB18a and ZB20a, respectively) are unconstrained due to solar system chaos.
 
 Compressed output of the HNBody simulations for ZB18a and ZB20a for the past 300 Myr.
@@ -29,20 +30,50 @@ Binary files are provided if you care about preserving disk space and slightly f
 - [[file:dat/PT-ZB18a_1-1.dat]] and [[file:dat/PT-ZB18a_1-1.bin]]
 - [[file:dat/PT-ZB20a_1-1.dat]] and [[file:dat/PT-ZB18a_1-1.bin]]
 
+** Main program
 We provide [[file:src/insolation.f90][Fortran subroutines]]  that interpolate the astronomical parameters to a certain calendar date and calculate insolation, and provide drop-in replacements to existing Fortran subroutines from the CESM.
-- [[file:src/paleoinsolation.f90]] example program that applies the different routines.
+- [[file:src/paleoinsolation.f90]] main program that calculates insolation for a time interval. It saves the file [[file:out/ZB18a_insolation.dat]].
 - [[file:src/data.f90]] reads binary and plain-text data files,  writes to file.
 - [[file:src/interp.f90]] interpolates the orbital solutions.
 - [[file:src/insolation.f90]] calculates insolation.
+ 
+** Input parameters
+Tweak [[file:input.txt]] to set parameters for the main program:
+#+begin_example
+-1.0	0.0	0.0	90.0	65.0	1360.7
+#+end_example
+- Time start (Myr in the past, t < 0)
+- Time end (Myr in the past, t <= 0)
+- Time resolution (kyr)
+  - if 0.0, use the variably sampled timesteps in the orbital solution
+  - if >0.0 linearly interpolate to desired resolution.
+- True solar longitude (°)                
+- Earth’s latitude (°)
+- S₀ (Wm¯²)
+# - The desired orbital solution, either ZB18a or ZB20a.
+
+By default, the program generates 65°N peak summer insolation for the past 1 Myr, using the variable timestep of the orbital solution ZB18a(1,1).
+
+** Output file
+[[file:out/ZB18a_insolation.dat]] is the main output file, that contains the columns
+- time (kyr)
+- eccentricity (-)
+- obliquity (°)
+- longitude of perihelion with respect to the moving equinox (°)
+- insolation for specified input parameters (Wm¯²)
+
+** Drop-in replacements
 - [[file:src/orb.f90]] drop-in replacement for subroutine [[https://github.com/CESM-Development/paleoToolkit/blob/master/PaleoCalAdjust/f90/modules/GISS_orbpar_subs.f90][GISS_orbpars]] in [[https://github.com/CESM-Development/paleoToolkit/tree/master/PaleoCalAdjust][PaleoCalAdjust]].
 - [[file:CESM/]] drop-in replacement for the ~shr_orb_params~ subroutine in the [[https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90][shr_orb_mod]] module in [[https://github.com/ESCOMP/CDEPS/tree/main][CDEPS]] (see [[file:CESM/README.org]] for implementation!)
+- [[file:src/shr_orb_mod.F90]] is the stripped-down version of this file that is used for testing.
 
+** Other
 We also provide the [[https://cran.r-project.org/][R]] functions [[file:R/insolation.R][insolation]] (calculates insolation, based on the R-package [[https://cran.r-project.org/package=palinsol][palinsol]]) and [[file:R/prep_solution.R][prep_solution]] (uses [[https://japhir.github.io/snvecR][snvecR]]) and the [[https://julialang.org/][Julia ]] code to generate the figures in the manuscript in [[file:figures.jl]].
 
 * Getting Started
-These commands will download everything in this repository to a local directory and run the example fortran code to interpolate the orbital solution and calculate insolation for some example timesteps/intervals.
+These commands will download everything in this repository to a local directory and run the example fortran code to interpolate the orbital solution and calculate insolation.
 
-Use this if you want to play around independently to see how it works.
+Use this if you want to have insolation values for different settings. 
 
 #+begin_src sh
   cd ~/ # or wherever you want to install it
@@ -54,7 +85,10 @@ Use this if you want to play around independently to see how it works.
   make
 #+end_src
 
+Don't forget to tweak the =input.txt= file. See [[https://github.com/japhir/paleoinsolation?tab=readme-ov-file#input-parameters][above]]
+
 Alternatively, you can navigate to the [[https://github.com/japhir/paleoinsolation/releases/][releases]] page to download a single =.zip= or =.tar.gz= archive file.
+
 
 * Other Commands
 The Makefile makes it possible to re-run the =PT_ZB18a_1-1.dat= creation from scratch. The below example explicitly triggers each of the targets in order to document the steps.

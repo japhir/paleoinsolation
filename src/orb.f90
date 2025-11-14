@@ -42,6 +42,7 @@ subroutine orbpar(yearCE,ecc,obl,lpx)
 !!$     call readdata("dat/PT-ZB18a_1-1.dat", times, eccs, obls, precs, lpxs, climprecs)
      ! read from binary
      call readbindata("dat/PT-ZB18a_1-1.bin", times, eccs, obls, precs, lpxs, climprecs)
+!!$     call readbindata("dat/PT-ZB20a_1-1.bin", times, eccs, obls, precs, lpxs, climprecs)
      n = size(times)
      initialized = .true.
      print *, 'Read insolation data from file with save flag'

@@ -123,7 +123,7 @@ ZB18a_insolation_ref = CSV.read("dat/ZB18a_insolation_ref.dat",
                                 )
 
 # paleoinsolation Fortran: 65deg N summer insolation dat/ZB18a_insolation.dat
-ZB18a_insolation = CSV.read("dat/ZB18a_insolation.dat",
+ZB18a_insolation = CSV.read("out/ZB18a_insolation.dat",
                             DataFrame;
                             delim = ' ',
                             stripwhitespace = true,
@@ -131,12 +131,16 @@ ZB18a_insolation = CSV.read("dat/ZB18a_insolation.dat",
                             header = [:time,
                                       :eccentricity,
                                       :obliquity,
-                                      :precession,
+                                      # :precession,
                                       :lpx,
-                                      :climatic_precession,
+                                      # :climatic_precession,
                                       :insolation]
                             )
 
+
+lines(ZB18a_insolation_ref.time, ZB18a_insolation_ref.insolation)
+
+lines!(ZB18a_insolation.time, ZB18a_insolation.insolation)
 
 # interpolated output from Fortran
 # vcat(
