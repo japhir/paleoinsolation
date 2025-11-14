@@ -3,6 +3,7 @@
 #+date: 2025-10-30
 
 [[https://doi.org/10.5281/zenodo.17478418][https://zenodo.org/badge/DOI/10.5281/zenodo.17478418.svg]]
+[[https://github.com/japhir/paleoinsolation/actions][https://github.com/japhir/paleoinsolation/actions/workflows/ci.yml/badge.svg]]
 
 To facilitate using recent astronomical solutions in [[https://en.wikipedia.org/wiki/General_circulation_model][GCMs]] such as the [[https://www.cesm.ucar.edu/][CESM]], we make the ~ZB18a~ and ~ZB20a~ astronomical solutions readily available.
 
