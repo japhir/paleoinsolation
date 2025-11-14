@@ -6,10 +6,15 @@ MAKEFLAGS += --no-builtin-rules --no-builtin-variables
 NAME := paleoinsolation
 
 # configuration settings
-FC := gfortran
-AR := ar rcs
-LD := $(FC)
+FC ?= gfortran
+AR ?= ar
+ARFLAGS ?= rcs
+LD ?= $(FC)
 RM := rm -f
+
+$(info FC is: $(FC))
+$(info AR is: $(AR))
+$(info LD is: $(LD))
 
 # directories
 SRC_DIR := src
@@ -26,8 +31,9 @@ SRCS := $(filter-out $(SRC_DIR)/paleoinsolation.f90, \
          $(wildcard $(SRC_DIR)/*.f90) $(wildcard $(SRC_DIR)/*.F90))
 
 # source files
-OBJS := $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(SRCS:.f90=.o))
-OBJS := $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(OBJS:.F90=.o))
+OBJS := $(SRCS)
+OBJS := $(patsubst $(SRC_DIR)/%.f90,$(OBJ_DIR)/%.o,$(OBJS))
+OBJS := $(patsubst $(SRC_DIR)/%.F90,$(OBJ_DIR)/%.o,$(OBJS))
 
 # main test/executable
 MAIN := $(SRC_DIR)/paleoinsolation.f90
@@ -45,7 +51,9 @@ all: insolation
 DEPS := $(OBJ_DIR)/deps.mk
 
 $(DEPS): $(SRCS)
-	@mkdir -p $(OBJ_DIR) $(MOD_DIR)
+	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(MOD_DIR)
+	@mkdir -p $(OUT_DIR)
 	@echo "Generating Fortran dependencies → $(DEPS)"
 	@echo "# Auto-generated Fortran module dependencies" > $(DEPS).tmp; \
 	for f in $(SRCS); do \
@@ -80,26 +88,25 @@ $(DEPS): $(SRCS)
 -include $(DEPS)
 
 # 
-$(LIB): $(DEPS) $(OBJS)
-	@mkdir -p $(OUT_DIR)
-	@echo "Creating $@"
-	$(AR) $@ $^
+$(LIB): $(OBJS)
+	@mkdir -p $(@D)
+	$(AR) $(ARFLAGS) $@ $^
 
 # create object files from Fortran source
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.f90
-	@mkdir -p $(dir $@) $(MOD_DIR)
+	@mkdir -p $(@D)
 	@echo "Compiling $<"
 	$(FC) $(FCFLAGS) -c -o $@ $<
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.F90
-	@mkdir -p $(dir $@) $(MOD_DIR)
+	@mkdir -p $(@D)
 	@echo "Compiling $<"
 	$(FC) $(FCFLAGS) -c -o $@ $<
 
 # link and archive
 $(TEST_EXE): $(LIB) $(MAIN_OBJ)
-	@mkdir -p $(OUT_DIR)
+	@mkdir -p $(@D)
 	@echo "Linking $@"
-	$(LD) -o $@ $(MAIN) $(FCFLAGS) $(LIB)
+	$(LD) -o $@ $(MAIN_OBJ) $(FCFLAGS) $(LIB)
 
 # compile the fortran routines
 fortran: $(TEST_EXE)
