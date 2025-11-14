@@ -49,3 +49,8 @@ jobs:
           refreshenv  # ensure PATH is updated
       - name: Run make
         run: make insolation
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZB18a_insolation_${{ matrix.os }}_${{ matrix.toolchain.compiler }}.dat
+          path: out/ZB18a_insolation.dat
