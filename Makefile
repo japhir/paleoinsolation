@@ -6,15 +6,11 @@ MAKEFLAGS += --no-builtin-rules --no-builtin-variables
 NAME := paleoinsolation
 
 # configuration settings
-FC ?= gfortran
-AR ?= ar
-ARFLAGS ?= rcs
-LD ?= $(FC)
+FC := gfortran
+AR := ar
+ARFLAGS := rcs
+LD := $(FC)
 RM := rm -f
-
-$(info FC is: $(FC))
-$(info AR is: $(AR))
-$(info LD is: $(LD))
 
 # directories
 SRC_DIR := src
@@ -87,7 +83,12 @@ $(DEPS): $(SRCS)
 
 -include $(DEPS)
 
-# 
+# .mod files are side effects of compiling .o files
+# This pattern rule tells Make that if it needs a .mod file,
+# it should ensure the corresponding .o is built
+$(MOD_DIR)/%.mod: $(OBJ_DIR)/%.o
+	@:
+
 $(LIB): $(OBJS)
 	@mkdir -p $(@D)
 	$(AR) $(ARFLAGS) $@ $^

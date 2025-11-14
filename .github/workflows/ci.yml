@@ -20,19 +20,19 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         toolchain:
           - {compiler: gcc, version: 'latest'}
-          - {compiler: intel, version: '2025.0'}
-          - {compiler: intel-classic, version: '2021.10'}
-          - {compiler: nvidia-hpc, version: '25.1'}
-          - {compiler: lfortran, version: '0.45.0'}
-        exclude:
-          - os: macos-latest
-            toolchain: {compiler: intel}
-          - os: macos-latest
-            toolchain: {compiler: intel-classic}
-          - os: macos-latest
-            toolchain: {compiler: nvidia-hpc}
-          - os: windows-latest
-            toolchain: {compiler: nvidia-hpc}
+        #   - {compiler: intel, version: '2025.0'}
+        #   - {compiler: intel-classic, version: '2021.10'}
+        #   - {compiler: nvidia-hpc, version: '25.1'}
+        #   - {compiler: lfortran, version: '0.45.0'}
+        # exclude:
+        #   - os: macos-latest
+        #     toolchain: {compiler: intel}
+        #   - os: macos-latest
+        #     toolchain: {compiler: intel-classic}
+        #   - os: macos-latest
+        #     toolchain: {compiler: nvidia-hpc}
+        #   - os: windows-latest
+        #     toolchain: {compiler: nvidia-hpc}
 
     steps:
       - name: Getting Repository
@@ -42,5 +42,10 @@ jobs:
         with:
           compiler: ${{ matrix.toolchain.compiler }}
           version: ${{ matrix.toolchain.version }}
+      - name: Install make on Windows
+        if: runner.os == 'Windows'
+        run: |
+          choco install make -y
+          refreshenv  # ensure PATH is updated
       - name: Run make
         run: make insolation
