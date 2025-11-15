@@ -54,3 +54,5 @@ jobs:
         with:
           name: ZB18a_insolation_${{ matrix.os }}_${{ matrix.toolchain.compiler }}.dat
           path: out/ZB18a_insolation.dat
+      - name: Test
+        run: make test

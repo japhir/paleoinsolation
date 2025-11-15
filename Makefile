@@ -23,7 +23,7 @@ OUT_DIR := fout
 FCFLAGS := -J$(MOD_DIR) -I$(MOD_DIR) -Isrc
 
 # list of all source files
-SRCS := $(filter-out $(SRC_DIR)/paleoinsolation.f90, \
+SRCS := $(filter-out $(SRC_DIR)/paleoinsolation.f90 $(SRC_DIR)/test_paleoinsolation.f90, \
          $(wildcard $(SRC_DIR)/*.f90) $(wildcard $(SRC_DIR)/*.F90))
 
 # source files
@@ -31,14 +31,21 @@ OBJS := $(SRCS)
 OBJS := $(patsubst $(SRC_DIR)/%.f90,$(OBJ_DIR)/%.o,$(OBJS))
 OBJS := $(patsubst $(SRC_DIR)/%.F90,$(OBJ_DIR)/%.o,$(OBJS))
 
-# main test/executable
+# library
+LIB := $(OUT_DIR)/lib$(NAME).a
+
+# main executable
 MAIN := $(SRC_DIR)/paleoinsolation.f90
 MAIN_OBJ := $(OBJ_DIR)/paleoinsolation.o
-LIB := $(OUT_DIR)/lib$(NAME).a
-TEST_EXE := $(OUT_DIR)/paleoinsolation.exe
+MAIN_EXE := $(OUT_DIR)/paleoinsolation.exe
+
+# test executable
+TEST := $(SRC_DIR)/test_paleoinsolation.f90
+TEST_OBJ := $(OBJ_DIR)/test_paleoinsolation.o
+TEST_EXE := $(OUT_DIR)/test_paleoinsolation.exe
 
 # declare all public targets
-.PHONY: all solution buildsnvec runsnvec fortran insolation clean cleanall
+.PHONY: all solution buildsnvec runsnvec fortran insolation test clean cleanall
 all: insolation
 
 # ------------------------------------------------------------
@@ -104,19 +111,25 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.F90
 	$(FC) $(FCFLAGS) -c -o $@ $<
 
 # link and archive
-$(TEST_EXE): $(LIB) $(MAIN_OBJ)
+$(MAIN_EXE): $(LIB) $(MAIN_OBJ)
 	@mkdir -p $(@D)
 	@echo "Linking $@"
 	$(LD) -o $@ $(MAIN_OBJ) $(FCFLAGS) $(LIB)
 
+$(TEST_EXE): $(LIB) $(TEST_OBJ)
+	@mkdir -p $(@D)
+	@echo "Linking $@"
+	$(LD) -o $@ $(TEST_OBJ) $(FCFLAGS) $(LIB)
+
 # compile the fortran routines
-fortran: $(TEST_EXE)
+fortran: $(MAIN_EXE) $(TEST_EXE)
 
 # broad overview targets
 solution: dat/ZB18a-plan3.dat dat/ZB20a-plan3.dat
 buildsnvec: snvec/snvec.x
 runsnvec: dat/PT-ZB18a_1-1.dat dat/PT-ZB20a_1-1.dat
 insolation: fortran out/ZB18a_insolation.dat input.txt
+test: fortran out/insgrid.dat
 
 ### solution:
 # download the orbital solution from the web
@@ -187,7 +200,11 @@ endif
 
 ### insolation
 # run example fortran routine to calculate insolation
-out/ZB18a_insolation.dat: out dat/PT-ZB18a_1-1.dat input.txt $(TEST_EXE)
+out/ZB18a_insolation.dat: out dat/PT-ZB18a_1-1.dat input.txt $(MAIN_EXE)
+	$(MAIN_EXE)
+
+# tests. Note that this writes some more files to the out directory!
+out/insgrid.dat: out $(TEST_EXE)
 	$(TEST_EXE)
 
 # cleanup, filter to avoid removing source code by accident

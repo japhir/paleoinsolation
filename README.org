@@ -19,7 +19,7 @@ The [[file:CESM/]] directory has all the files needed as well as a [[file:CESM/R
 * Details
 We provide a [[file:Makefile][Makefile]] that downloads the orbital solutions and the [[https://github.com/rezeebe/snvec][snvec C program]], [[file:snvec.patch][patches]] snvec to also output the longitude of perihelion, and then compiles and runs snvec for the past 300 Myr to create the =ZB18a(1,1)= and =ZB20a(1,1)= solutions (where the numbers in parameters refer to the dynamical ellipticity and the tidal dissipation, respectively). Our main Fortran program then calculates 65°N peak summer insolation for the past 1 Myr from the =ZB18a(1,1)= solution.
 
-** Orbital solutions
+** Astronomical Solutions
 Please note that intervals prior to −58 and −71 Myr (for ZB18a and ZB20a, respectively) are unconstrained due to solar system chaos.
 
 Compressed output of the HNBody simulations for ZB18a and ZB20a for the past 300 Myr.
@@ -94,24 +94,26 @@ Alternatively, you can navigate to the [[https://github.com/japhir/paleoinsolati
 * Other Commands
 The Makefile makes it possible to re-run the =PT_ZB18a_1-1.dat= creation from scratch. The below example explicitly triggers each of the targets in order to document the steps.
 #+begin_src sh
-  cd ~/ # or wherever you want to install it
-  # copy the repository to your local directory.
-  git clone 'https://github.com/japhir/paleoinsolation'
-  # enter the new directory
-  cd 'paleoinsolation'
-  # to trigger creation from scratch
-  make clean      # delete Fortran binaries and out/*.dat files
-  make cleanall   # remove the intermediate .dat and .bin files so they can be re-created.
-  make solution   # extract tar.gz orbital solution files 
-  make clonesnvec # download snvec from https://github.com/rezeebe/snvec
-  make buildsnvec # patch and build snvec to output the longitude of perihelion with
-                  # respect to the moving equinox
-  make runsnvec   # run snvec
-  make fortran    # compile the fortran code
-  make insolation # run fortran code to interpolate and calculate insolation examples
+   cd ~/ # or wherever you want to install it
+   # copy the repository to your local directory.
+   git clone 'https://github.com/japhir/paleoinsolation'
+   # enter the new directory
+   cd 'paleoinsolation'
+   # to trigger creation from scratch
+   make clean      # delete Fortran binaries and out/*.dat files
+   make cleanall   # remove the intermediate .dat and .bin files so they can be re-created.
+   make solution   # extract tar.gz orbital solution files 
+   make clonesnvec # download snvec from https://github.com/rezeebe/snvec
+   make buildsnvec # patch and build snvec to output the longitude of perihelion with
+                   # respect to the moving equinox
+   make runsnvec   # run snvec
+   make fortran    # compile the fortran code
+   make test       # run fortran code tests
+   make insolation # run fortran code to calc insolation
+                   # for a time interval, uses input file
 #+end_src
 
-The default target is ~make insolation~, which will compile the Fortran code and calculate example insolation outputs while re-using the existing precession-tilt files.
+The default target is ~make insolation~, which will compile the Fortran code and calculate insolation while re-using the existing precession-tilt files.
 
 * Contributing and Troubleshooting
 Contributions are more than welcome!
