@@ -171,7 +171,7 @@ program paleoinsolation
         if ((time(i) < time_start_kyr) .or. (time(i) > time_end_kyr)) then
            cycle ! only output desired timesteps
         end if
-        write(io,*) time(i), ecc(i), obl(i)*R2D, lpx(i)*R2D, interpolate_insolation(i)
+        write(io,*) time(i), ecc(i), obl(i)*R2D, modulo(lpx(i), 2*pi)*R2D, interpolate_insolation(i)
      enddo
      close(io)
 
