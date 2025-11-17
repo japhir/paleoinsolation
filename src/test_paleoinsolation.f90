@@ -18,13 +18,12 @@ program paleoinsolation
   use orb, only : orbpar
   use insol, only : insolation
   use shr_kind_mod, only : SHR_KIND_R8, SHR_KIND_IN
-  use shr_orb_mod, only : shr_orb_params, SHR_ORB_UNDEF_INT, SHR_ORB_UNDEF_REAL
+  use shr_orb_mod, only : shr_orb_params, SHR_ORB_UNDEF_INT
   implicit none
 
   ! some constants
   ! pi = 3.1415926535897932_dp
   real(dp), parameter :: pi = 4.0_dp*datan(1.0_dp)
-  real(dp), parameter :: OMT = 75.594_dp
   real(dp), parameter :: R2D = 180._dp / pi ! radians to degrees
 
   ! the variables that hold ZB18a(1,1) input
@@ -46,11 +45,11 @@ program paleoinsolation
   ! a grid of lat/lon to hold insolation
   real(dp), allocatable :: latlons(:,:,:)
   ! the length of time(:) etc.
-  integer :: n, io, interpolate_n
+  integer :: n, io
   ! desired true Solar longitude, Earth's latitude, Solar constant
   ! input parsing
   ! in degrees
-  real(dp) :: longr, latr, S0
+  real(dp) :: S0
   ! converted to in radians
   real(dp) :: long, lat
 
@@ -106,7 +105,7 @@ program paleoinsolation
 
   print *,'using shr_orb_params'
   ! same but implemented with the ESCOMP/CDEPS API
-  iyear_AD = -yearBP + 2000_SHR_KIND_IN
+  iyear_AD = int(-yearBP) + 2000_SHR_KIND_IN
   call shr_orb_params(iyear_AD,eccen,obliq,mvelp,obliqr,lambm0,mvelpp,.true.)
   print *,'linearly interpolated astronomical solution at ',iyear_AD,' CE'
   print *,'using shr_orb_params'

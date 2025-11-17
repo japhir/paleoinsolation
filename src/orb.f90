@@ -46,6 +46,8 @@ subroutine orbpar(yearCE,ecc,obl,lpx)
      n = size(times)
      initialized = .true.
      print *, 'Read insolation data from file with save flag'
+  else
+     n = size(times)
   end if
 
   ! the DE431 ephimerides used for the ZB18a and ZB20a solutions

@@ -59,7 +59,7 @@ contains
     integer(SHR_KIND_IN) :: io, ios, i, n
     character(len=*), intent(in) :: pt_solution_file
     character(len=512) :: msg
-    open(io,file=pt_solution_file, status = "old", action = "read", &
+    open(newunit=io,file=pt_solution_file, status = "old", action = "read", &
          iostat=ios, iomsg = msg)
     ! check if file exists/contains anything
     if (ios /= 0) then

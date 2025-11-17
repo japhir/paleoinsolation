@@ -17,14 +17,12 @@ program paleoinsolation
   use interp, only : locate
   use orb, only : orbpar
   use insol, only : insolation
-  use shr_kind_mod, only : SHR_KIND_R8, SHR_KIND_IN
-  use shr_orb_mod, only : shr_orb_params, SHR_ORB_UNDEF_INT, SHR_ORB_UNDEF_REAL
+  use shr_orb_mod, only : shr_orb_params
   implicit none
 
   ! some constants
   ! pi = 3.1415926535897932_dp
   real(dp), parameter :: pi = 4.0_dp*datan(1.0_dp)
-  real(dp), parameter :: OMT = 75.594_dp
   real(dp), parameter :: R2D = 180._dp / pi ! radians to degrees
 
   ! the variables that hold ZB18a(1,1) input
@@ -57,7 +55,6 @@ program paleoinsolation
   real(dp) :: long, lat
 
   ! get orbital parameters at a specific calendar year
-  real(dp) :: yearBP
   real(dp) :: yearCE
 
   print *,'--------------------------------------------------------------------------------'
