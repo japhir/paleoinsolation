@@ -43,7 +43,7 @@ pt = 4/3
 cm = inch / 2.54
 # GLMakie.activate!() # for interactive exploration
 CairoMakie.activate!() # to save PDFs for manuscript
-global_S0 = 1367.1 # Menviel 2019, same as models
+global_S0 = 1360.7 # Menviel 2019, same as models
 # summer insolation label
 sil = rich("65°N peak summer\ninsolation (Wm", superscript("−2"),")")
 
@@ -197,7 +197,7 @@ las_xss5 = CSV.read("La04/insolation_true90_65.dat",
                     delim = ' ', ignorerepeated = true,
                     header = [:time, :insolation])
 las_xss5[!, :insolation] = parse.(Float64, replace.(las_xss5[!, :insolation], "D" => "E"))
-las_xss6 = CSV.read("La04/insola_mean_daily_true_lon_1367.1.txt",
+las_xss6 = CSV.read("La04/insola_mean_daily_true_lon_1360.7.txt",
                     DataFrame,
                     delim = ' ', ignorerepeated = true,
                     header = [:time, :insolation])
@@ -268,134 +268,6 @@ save("imgs/compare_solutions_insolation.pdf",
 fsol
 
 
-# The extended figure
-# Figure A1: fsol
-zbl = "ZB18a(1,1)"
-fsol = Figure()
-ax_ecc = Axis(fsol[1,1],
-              ylabel = "Eccentricity (-)\nClimatic precession (-)", xlabel = "", xticklabelsvisible = false)
-ax_obl = Axis(fsol[2,1],
-              ylabel = "Obliquity (°)", xlabel = "", xticklabelsvisible = false)
-ax_ins = Axis(fsol[3,1], 
-              ylabel = sil,
-              xlabel = "", xticklabelsvisible = false)
-ax_insdiff = Axis(fsol[4,1], 
-              ylabel = rich("Δ insolation\n(Wm", superscript("−2"),")"),
-                  xlabel = "Time (Myr)",
-                  yticks = -90:30:90)
-linkxaxes!(ax_ecc, ax_obl, ax_ins, ax_insdiff)
-
-# ecc
-lines!(ax_ecc,
-       # we put everything in Myr before 2000 explicitly
-       (PT_ZB18a.year .- 2000) * 1e-6,
-       PT_ZB18a.eccentricity,
-       color = Makie.wong_colors()[1],
-       linewidth = 3, label = zbl)
-lines!(ax_ecc,
-       (ber_df.year .- 2000) * 1e-6, 
-       # ber_df.year * 1e-6 .- 5.0e-5, # convert to t0 = 2000
-       # (ber_df.year .- 1950) * 1e-6,
-       ber_df.eccentricity, label = "Ber78", color = Makie.wong_colors()[4], alpha = 0.8)
-lines!(ax_ecc,
-       (ber91_df.year .- 2000) * 1e-6,
-       ber91_df.eccentricity, label = "BL91",
-       color = Makie.wong_colors()[6], alpha = 0.8)
-lines!(ax_ecc, (las_xss.year .- 2000) * 1e-6, las_xss.eccentricity,
-       label = "La04", linewidth = 1.5, linestyle = :dash,
-       color = Makie.wong_colors()[2]
-       )
-# cp
-lines!(ax_ecc, (PT_ZB18a.year .- 2000) * 1e-6,
-       PT_ZB18a.climatic_precession,
-       color = Makie.wong_colors()[1],
-       linewidth = 3, label = zbl)
-lines!(ax_ecc,
-       (ber_df.year .- 2000) * 1e-6, 
-       ber_df.climatic_precession,
-       label = "Ber78", color = Makie.wong_colors()[4], alpha = 0.8)
-lines!(ax_ecc,
-       (ber91_df.year .- 2000) * 1e-6,
-       ber91_df.climatic_precession,
-       label = "BL91", color = Makie.wong_colors()[6], alpha = 0.8)
-lines!(ax_ecc, (las_xss.year .- 2000) * 1e-6,
-       las_xss.climatic_precession,
-       label = "La04", linewidth = 1.5, linestyle = :dash,
-       color = Makie.wong_colors()[2]
-       )
-
-# obl
-lines!(ax_obl,
-       (PT_ZB18a.year .- 2000) * 1e-6,
-       rad2deg.(PT_ZB18a.obliquity),
-       color = Makie.wong_colors()[1],
-       linewidth = 3, label = zbl)
-lines!(ax_obl,
-       (ber_df.year .- 2000) * 1e-6,
-       rad2deg.(ber_df.obliquity),
-       label = "Ber78", color = Makie.wong_colors()[4], alpha = 0.8)
-lines!(ax_obl,
-       (ber91_df.year .- 2000) * 1e-6,
-       rad2deg.(ber91_df.obliquity), label = "BL91", color = Makie.wong_colors()[6], alpha = 0.8)
-lines!(ax_obl,
-       (las_xss.year .- 2000) * 1e-6,
-       rad2deg.(las_xss.obliquity),
-       label = "La04", linewidth = 1.5, linestyle = :dash,
-       color = Makie.wong_colors()[2]
-       )
-# ins
-lines!(ax_ins,
-       (PT_ZB18a.year .- 2000) * 1e-6,
-       PT_ZB18a.insolation,
-       color = Makie.wong_colors()[1],
-       linewidth = 3, label = zbl)
-lines!(ax_ins,
-       (ber_df.year .- 2000) * 1e-6,
-       ber_df.insolation,
-       label = "Ber78", color = Makie.wong_colors()[4], alpha = 0.8)
-lines!(ax_ins,
-       (ber91_df.year .- 2000) * 1e-6,
-       ber91_df.insolation,
-       label = "BL91", color = Makie.wong_colors()[6], alpha = 0.8)
-lines!(ax_ins,
-       (las_xss.year .- 2000) * 1e-6,
-       las_xss.insolation,
-       label = "La04", linewidth = 1.5, linestyle = :dash,
-       color = Makie.wong_colors()[2]
-       )
-
-# linearly interpolate our data to Ber78 and Ber91 timescales
-# in order to calculate differences
-using DataInterpolations
-PT_ZB18a_interp = LinearInterpolation(
-    # they need the time in increasing order for interpolation
-    reverse(PT_ZB18a.insolation), reverse(PT_ZB18a.year))
-
-lines!(ax_insdiff,
-       (ber_df.year .- 2000) * 1e-6,
-       ber_df.insolation .- PT_ZB18a_interp.(ber_df.year),
-       label = "Ber78", color = Makie.wong_colors()[4])
-lines!(ax_insdiff,
-       (ber91_df.year .- 2000) * 1e-6,
-       ber91_df.insolation .- PT_ZB18a_interp.(ber91_df.year),
-       label = "BL91", color = Makie.wong_colors()[6])
-lines!(ax_insdiff,
-       (las_xss.year .- 2000) * 1e-6,
-       las_xss.insolation .- PT_ZB18a_interp(las_xss.year),
-       label = "La04", linewidth = 1.5, linestyle = :dash,
-       color = Makie.wong_colors()[2]
-       )
-
-# no La10b for this one
-Legend(fsol[0,1], ax_ins, orientation = :horizontal, halign = :right)
-rowgap!(fsol.layout, 5)
-ylims!(-70, 70)
-
-xlims!(-2.5, -2)
-
-save("imgs/compare_solutions_insolation_detailed.pdf",
-     fsol, size=(5.5inch, 5inch), px_per_unit = 300/inch)
-
 
 
 # Figure 2: fecc
@@ -442,7 +314,7 @@ update_theme!(
 # contrast different insolation calculations for La04
 # figure for paper?
 fcomp = Figure()
-ax = Axis(fcomp[1,1], xlabel = "Time (Myr)", ylabel = sil, title = "S₀ = $(global_S0)")
+ax = Axis(fcomp[1,1], xlabel = "Time (Myr)", ylabel = sil, title = "S₀ = $(global_S0) Wm¯²")
 linesegments!(ax, times_las .- 0.050, ber_ins_R,
               # color = :darkred,
               color = :lightgreen,
@@ -587,10 +459,10 @@ save("imgs/ZB18a_insolation_t0.png",fmod, size=(6inch, 3inch), px_per_unit = 300
 # takes extrema of these differences
 # and puts these in the tables that I'm reading in here.
 using Arrow
-ber_diffs = DataFrame(Arrow.Table("out/ber_diffs2_50Myr_ins_2kyr.arrow"))
+ber_diffs = DataFrame(Arrow.Table("out/ber_diffs_50Myr_ins_2kyr.arrow"))
 ber91_diffs = DataFrame(Arrow.Table("out/ber91_diffs_50Myr_ins_2kyr.arrow"))
-las_diffs = DataFrame(Arrow.Table("out/las_diffs2_50Myr_ins_2kyr.arrow"))
-las_diffs_phase = DataFrame(Arrow.Table("out/las_diffs_phase_50.arrow"))
+las_diffs = DataFrame(Arrow.Table("out/las_diffs_50Myr_ins_2kyr.arrow"))
+las_diffs_phase = DataFrame(Arrow.Table("out/las_diffs_phase_50Myr_ins_2kyr.arrow"))
 
 # plot diffs
 fmd = Figure()
@@ -613,16 +485,15 @@ rowgap!(fmd.layout, 5)
 # band!(ax_diff, las_diffs4.time * 1e-3, las_diffs4.lwr,  las_diffs4.upr, label = "La04 phase", color = :black)
 # # DataInspector() # doesn't play nice with band
 # Legend(fmd[1,2], ax_diff, tellwidth = true, tellheight = false, unique = true, merge = true)
-save("imgs/extrema_insolation.png", fmd, size=(5.5inch, 2.5inch), px_per_unit = 300/inch)
 # # deactivate_interaction!(ax_diff, :rectanglezoom)
 # # make it possible to click and get coordinates
 # # pt = select_point(ax_diff.scene)
 
 save("imgs/extrema_insolation.pdf", fmd, size=(5.5inch, 2.5inch), px_per_unit = 300/inch)
-save("imgs/extrema_insolation.png", fmd, size=(5.5inch, 2.5inch), px_per_unit = 300/inch)
+# save("imgs/extrema_insolation.png", fmd, size=(5.5inch, 2.5inch), px_per_unit = 300/inch)
 
 # Figure 6: ins differences combined
-# this uses my SNVec.jl interactive figure
+# this uses my SNVec.jl interactive figure created in test_snvec.jl
 fins
 # to keep this document relatively clean, I'm not including it here
 # but it's available at https://github.com/japhir/InsolationExplorer.jl
@@ -633,32 +504,32 @@ set_close_to!(sg.sliders[3], -2108)
 d1_2 = copy(ber_insdiff[])
 set_close_to!(sg.sliders[3], -5038)
 d2 = copy(ber_insdiff[])
-set_close_to!(sg.sliders[3], -9892)
-xlims!(ax_lpx, [-10200, -9500])
-d3 = copy(las_insdiff[])
-set_close_to!(sg.sliders[3], -14824)
-xlims!(ax_lpx, [-15200, -14500])
-d4 = copy(las_insdiff[])
-set_close_to!(sg.sliders[2], 1.146564088532723) # 0--20 La04 65 ins 2 kyr
-set_close_to!(sg.sliders[3], -9892)
-xlims!(ax_lpx, [-10200, -9500])
-d3f = copy(las_insdiff[])
-extrema(d3f)
-set_close_to!(sg.sliders[3], -14824)
-xlims!(ax_lpx, [-15200, -14500])
-d4f = copy(las_insdiff[])
-extrema(d4f)
+# set_close_to!(sg.sliders[3], -9892)
+# xlims!(ax_lpx, [-10200, -9500])
+# d3 = copy(las_insdiff[])
+# set_close_to!(sg.sliders[3], -14824)
+# xlims!(ax_lpx, [-15200, -14500])
+# d4 = copy(las_insdiff[])
+# set_close_to!(sg.sliders[2], 1.146564088532723) # 0--20 La04 65 ins 2 kyr
+# set_close_to!(sg.sliders[3], -9892)
+# xlims!(ax_lpx, [-10200, -9500])
+# d3f = copy(las_insdiff[])
+# extrema(d3f)
+# set_close_to!(sg.sliders[3], -14824)
+# xlims!(ax_lpx, [-15200, -14500])
+# d4f = copy(las_insdiff[])
+# extrema(d4f)
 
-# after figuring out that with a slightly different td value La04 is fully aligned
-set_close_to!(sg.sliders[3], -40000)
-xlims!(ax_lpx, [-40350, -39650])
-extrema(las_insdiff[])
-set_close_to!(sg.sliders[3], -30000)
-xlims!(ax_lpx, [-30350, -29650])
-set_close_to!(sg.sliders[3], -3206)
+# # after figuring out that with a slightly different td value La04 is fully aligned
+# set_close_to!(sg.sliders[3], -40000)
+# xlims!(ax_lpx, [-40350, -39650])
+# extrema(las_insdiff[])
+# set_close_to!(sg.sliders[3], -30000)
+# xlims!(ax_lpx, [-30350, -29650])
+# set_close_to!(sg.sliders[3], -3206)
 
 
-# new insdiff figure
+# new insdiff figure, but still need diff data from above
 finsdiff = Figure()
 ax1 = Axis(finsdiff[1,1], title = "Ber78 − ZB18a\n−934 kyr", aspect = DataAspect())
 cb1 = image!(ax1,
@@ -703,7 +574,7 @@ contour!(ax2,
          levels = -600:20:600,
          color = :white)
 
-Colorbar(finsdiff[1,2], cb1, vertical = true, label = L"$\Delta$Insolation (Wm$^{-2}$)")
+Colorbar(finsdiff[1,2], cb1, label = L"$\Delta$Insolation (Wm$^{-2}$)")
 Label(finsdiff[4,1], "True solar longitude (°)", tellwidth = false, tellheight = true)
 Label(finsdiff[1:3,0], "Earth’s latitude (°)", tellheight = false, tellwidth = true,
       rotation = 0.5pi)
@@ -711,6 +582,7 @@ hidexdecorations!(finsdiff.content[1], ticks = false)
 hidexdecorations!(finsdiff.content[2], ticks = false)
 # hidexdecorations!(finsdiff.content[3], ticks = false)
 # hidexdecorations!(finsdiff.content[4], ticks = false)
+colgap!(finsdiff.layout, 6)
 
 save("imgs/insolation_differences.png", finsdiff,
      size=(4inch, 6inch), px_per_unit = 300/inch)
@@ -719,7 +591,192 @@ save("imgs/insolation_differences.png", finsdiff,
 
 
 
-# Figure A: f obliquity
+# Appendix
+
+# The extended figure
+# Figure A1: fsol
+zbl = "ZB18a(1,1)"
+fsol = Figure()
+ax_ecc = Axis(fsol[1,1],
+              ylabel = "Eccentricity (-)\nClimatic precession (-)", xlabel = "", xticklabelsvisible = false)
+ax_obl = Axis(fsol[2,1],
+              ylabel = "Obliquity (°)", xlabel = "", xticklabelsvisible = false)
+ax_ins = Axis(fsol[3,1], 
+              ylabel = sil,
+              xlabel = "", xticklabelsvisible = false)
+ax_insdiff = Axis(fsol[4,1], 
+              ylabel = rich("Δ insolation\n(Wm", superscript("−2"),")"),
+                  xlabel = "Time (Myr)",
+                  yticks = -90:30:90)
+linkxaxes!(ax_ecc, ax_obl, ax_ins, ax_insdiff)
+
+# ecc
+lines!(ax_ecc,
+       # we put everything in Myr before 2000 explicitly
+       (PT_ZB18a.year .- 2000) * 1e-6,
+       PT_ZB18a.eccentricity,
+       color = Makie.wong_colors()[1],
+       linewidth = 3, label = zbl)
+lines!(ax_ecc,
+       (ber_df.year .- 2000) * 1e-6, 
+       # ber_df.year * 1e-6 .- 5.0e-5, # convert to t0 = 2000
+       # (ber_df.year .- 1950) * 1e-6,
+       ber_df.eccentricity, label = "Ber78", color = Makie.wong_colors()[4], alpha = 0.8)
+lines!(ax_ecc,
+       (ber91_df.year .- 2000) * 1e-6,
+       ber91_df.eccentricity, label = "BL91",
+       color = Makie.wong_colors()[6], alpha = 0.8)
+lines!(ax_ecc, (las_xss.year .- 2000) * 1e-6, las_xss.eccentricity,
+       label = "La04", linewidth = 1.5, linestyle = :dash,
+       color = Makie.wong_colors()[2]
+       )
+# cp
+lines!(ax_ecc, (PT_ZB18a.year .- 2000) * 1e-6,
+       PT_ZB18a.climatic_precession,
+       color = Makie.wong_colors()[1],
+       linewidth = 3, label = zbl)
+lines!(ax_ecc,
+       (ber_df.year .- 2000) * 1e-6, 
+       ber_df.climatic_precession,
+       label = "Ber78", color = Makie.wong_colors()[4], alpha = 0.8)
+lines!(ax_ecc,
+       (ber91_df.year .- 2000) * 1e-6,
+       ber91_df.climatic_precession,
+       label = "BL91", color = Makie.wong_colors()[6], alpha = 0.8)
+lines!(ax_ecc, (las_xss.year .- 2000) * 1e-6,
+       las_xss.climatic_precession,
+       label = "La04", linewidth = 1.5, linestyle = :dash,
+       color = Makie.wong_colors()[2]
+       )
+
+# obl
+lines!(ax_obl,
+       (PT_ZB18a.year .- 2000) * 1e-6,
+       rad2deg.(PT_ZB18a.obliquity),
+       color = Makie.wong_colors()[1],
+       linewidth = 3, label = zbl)
+lines!(ax_obl,
+       (ber_df.year .- 2000) * 1e-6,
+       rad2deg.(ber_df.obliquity),
+       label = "Ber78", color = Makie.wong_colors()[4], alpha = 0.8)
+lines!(ax_obl,
+       (ber91_df.year .- 2000) * 1e-6,
+       rad2deg.(ber91_df.obliquity), label = "BL91", color = Makie.wong_colors()[6], alpha = 0.8)
+lines!(ax_obl,
+       (las_xss.year .- 2000) * 1e-6,
+       rad2deg.(las_xss.obliquity),
+       label = "La04", linewidth = 1.5, linestyle = :dash,
+       color = Makie.wong_colors()[2]
+       )
+# ins
+lines!(ax_ins,
+       (PT_ZB18a.year .- 2000) * 1e-6,
+       PT_ZB18a.insolation,
+       color = Makie.wong_colors()[1],
+       linewidth = 3, label = zbl)
+lines!(ax_ins,
+       (ber_df.year .- 2000) * 1e-6,
+       ber_df.insolation,
+       label = "Ber78", color = Makie.wong_colors()[4], alpha = 0.8)
+lines!(ax_ins,
+       (ber91_df.year .- 2000) * 1e-6,
+       ber91_df.insolation,
+       label = "BL91", color = Makie.wong_colors()[6], alpha = 0.8)
+lines!(ax_ins,
+       (las_xss.year .- 2000) * 1e-6,
+       las_xss.insolation,
+       label = "La04", linewidth = 1.5, linestyle = :dash,
+       color = Makie.wong_colors()[2]
+       )
+
+# linearly interpolate our data to Ber78 and Ber91 timescales
+# in order to calculate differences
+using DataInterpolations
+PT_ZB18a_interp = LinearInterpolation(
+    # they need the time in increasing order for interpolation
+    reverse(PT_ZB18a.insolation), reverse(PT_ZB18a.year))
+
+lines!(ax_insdiff,
+       (ber_df.year .- 2000) * 1e-6,
+       ber_df.insolation .- PT_ZB18a_interp.(ber_df.year),
+       label = "Ber78", color = Makie.wong_colors()[4])
+lines!(ax_insdiff,
+       (ber91_df.year .- 2000) * 1e-6,
+       ber91_df.insolation .- PT_ZB18a_interp.(ber91_df.year),
+       label = "BL91", color = Makie.wong_colors()[6])
+lines!(ax_insdiff,
+       (las_xss.year .- 2000) * 1e-6,
+       las_xss.insolation .- PT_ZB18a_interp(las_xss.year),
+       label = "La04", linewidth = 1.5, linestyle = :dash,
+       color = Makie.wong_colors()[2]
+       )
+
+# no La10b for this one
+Legend(fsol[0,1], ax_ins, orientation = :horizontal, halign = :right)
+rowgap!(fsol.layout, 5)
+ylims!(-70, 70)
+
+xlims!(-2.5, -2)
+
+save("imgs/compare_solutions_insolation_detailed.pdf",
+     fsol, size=(5.5inch, 5inch), px_per_unit = 300/inch)
+
+
+# Figure A2: fsol extension
+fsol = Figure()
+zbl = "ZB18a(1,1)"
+ax_ins1 = Axis(fsol[1,1])
+ax_ins2 = Axis(fsol[2,1])
+ax_ins3 = Axis(fsol[3,1])
+ax_ins4 = Axis(fsol[4,1], xlabel = "Time (Myr)")
+Label(fsol[1:4,0], sil, rotation = pi/2)
+lns = Vector{Lines}(undef, 4)
+for ax in [ax_ins1, ax_ins2, ax_ins3, ax_ins4]
+    lns[1] = lines!(ax, ber91_df.time * 1e-3, ber91_df.insolation,
+           label = "BL91",
+           color = Makie.wong_colors()[6]
+           )
+    lns[2] = lines!(ax, ber_df.time * 1e-3, ber_df.insolation,
+           label = "Ber79",
+           # linestyle = :dash,
+           color = Makie.wong_colors()[4]
+           )
+    lns[3] = lines!(ax, PT_ZB18a.time .* 1e-3, PT_ZB18a.insolation,
+           label = zbl, linewidth = 3,
+           color = Makie.wong_colors()[1]
+           )
+    lns[4] = lines!(ax, las_xss.time * 1e-3, las_xss.insolation,
+           label = "La04",
+           linestyle = :dash,
+           color = Makie.wong_colors()[2]
+           )
+end
+bl, be, zb, ls = lns
+Legend(fsol[0,1],
+       [
+           be,
+           bl,
+           ls,
+           zb
+       ],
+       ["Ber78",
+        "BL91",
+        "La04",
+        "ZB18a(1,1)"],
+       orientation = :horizontal,
+       halign = :right)
+rowgap!(fsol.layout, 1, 5)
+# linkxaxes!([ax_ins1, ax_ins2, ax_ins3, ax_ins4])
+xlims!(ax_ins1, -2, -1.5)
+xlims!(ax_ins2, -1.5, -1)
+xlims!(ax_ins3, -1, -0.5)
+xlims!(ax_ins4, -0.5, 0)
+
+save("imgs/compare_solutions_past2Myr.pdf", fsol,
+     size=(5.5inch, 5.5inch), px_per_unit = 300/inch)
+
+
+# Figure A3: f obliquity
 f, ax = lines(1e-3 * PT_ZB18a.time,
               rad2deg.(PT_ZB18a.obliquity),
               label = "ZB18a(1,1)",
@@ -742,8 +799,7 @@ save("imgs/obliquity.pdf", f,
      size=(4.5inch, 2inch), px_per_unit = 300/inch)
 
 
-
-# Figure A: fobl
+# Figure A4: fobl
 # obliquity ranges
 obl = DataFrame(
 category_labels = [
@@ -842,55 +898,79 @@ save("imgs/obliquity_ranges.pdf", f,
      size=(4.5inch, 3inch), px_per_unit = 300/inch)
 
 
-# Figure A: fsol extension
-fsol = Figure()
-zbl = "ZB18a(1,1)"
-ax_ins1 = Axis(fsol[1,1])
-ax_ins2 = Axis(fsol[2,1])
-ax_ins3 = Axis(fsol[3,1])
-ax_ins4 = Axis(fsol[4,1], xlabel = "Time (Myr)")
-Label(fsol[1:4,0], sil, rotation = pi/2)
-lns = Vector{Lines}(undef, 4)
-for ax in [ax_ins1, ax_ins2, ax_ins3, ax_ins4]
-    lns[1] = lines!(ax, ber91_df.time * 1e-3, ber91_df.insolation,
-           label = "BL91",
-           color = Makie.wong_colors()[6]
-           )
-    lns[2] = lines!(ax, ber_df.time * 1e-3, ber_df.insolation,
-           label = "Ber79",
-           # linestyle = :dash,
-           color = Makie.wong_colors()[4]
-           )
-    lns[3] = lines!(ax, PT_ZB18a.time .* 1e-3, PT_ZB18a.insolation,
-           label = zbl, linewidth = 3,
-           color = Makie.wong_colors()[1]
-           )
-    lns[4] = lines!(ax, las_xss.time * 1e-3, las_xss.insolation,
-           label = "La04",
-           linestyle = :dash,
-           color = Makie.wong_colors()[2]
-           )
-end
-bl, be, zb, ls = lns
-Legend(fsol[0,1],
-       [
-           be,
-           bl,
-           ls,
-           zb
-       ],
-       ["Ber78",
-        "BL91",
-        "La04",
-        "ZB18a(1,1)"],
-       orientation = :horizontal,
-       halign = :right)
-rowgap!(fsol.layout, 1, 5)
-# linkxaxes!([ax_ins1, ax_ins2, ax_ins3, ax_ins4])
-xlims!(ax_ins1, -2, -1.5)
-xlims!(ax_ins2, -1.5, -1)
-xlims!(ax_ins3, -1, -0.5)
-xlims!(ax_ins4, -0.5, 0)
+# final two figures were also generated with interactive insolation explorer mentioned above
+# Figure A5
+# insdiffprec
+fins
+## 4 older max contrast during ecc max
+set_close_to!(sg.sliders[3], -3831.2)
+cpmax = copy(ins[])
+set_close_to!(sg.sliders[3], -3841.6)
+cpmin = copy(ins[])
+cpdiff = cpmin .- cpmax
+maximum(abs.(cpdiff))
 
-save("imgs/compare_solutions_past2Myr.pdf", fsol,
-     size=(5.5inch, 5.5inch), px_per_unit = 300/inch)
+# diff illustration
+f = Figure()
+ax = Axis(f[1,1],
+          title = L"Difference between climatic precession minimum and maximum\n$-3.8416$\,Myr vs.\ $-3.8312$\,Myr",
+          xlabel = "True solar longitude (°)",
+          ylabel = "Earth’s latitude (°)")
+cb = image!(ax,
+       extrema(lons) ./ pi .* 180,
+       extrema(lats) ./ pi .* 180,
+       cpdiff,
+       interpolate = false,
+       colormap = :diff,
+       colorrange = (-130, 130)
+)
+Colorbar(f[1,2], cb, label = L"ΔInsolation (Wm$^{-2}$)")
+contour!(ax,
+         extrema(lons) ./ pi .* 180,
+         extrema(lats) ./ pi .* 180,
+         cpdiff,
+         labels = true,
+         levels = vcat(-200:20:-20, 20:20:200),
+         color = :white
+)
+save("imgs/insolation_difference_precession_-3.84.png",
+     f,
+     size=(6inch, 3inch), px_per_unit = 300/inch)
+
+
+# Figure A6
+# insdiffobl
+fins
+## 5 high obl during ecc low (VLN)
+set_close_to!(sg.sliders[3], -2468.4) # obl max
+oblmax = copy(ins[])
+set_close_to!(sg.sliders[3], -2487.4) # obl min
+oblmin = copy(ins[])
+obldiff = oblmin .- oblmax
+maximum(abs.(obldiff))
+
+f = Figure()
+ax = Axis(f[1,1],
+          title = L"Difference between obliquity minimum and maximum\n$-2.4874$\,Myr vs.\ $-2.4684$\,Myr",
+          xlabel = "True solar longitude (°)",
+          ylabel = "Earth’s latitude (°)")
+cb = image!(ax,
+       extrema(lons) ./ pi .* 180,
+       extrema(lats) ./ pi .* 180,
+       obldiff,
+       interpolate = false,
+       colormap = :diff,
+       colorrange = (-60, 60)
+)
+Colorbar(f[1,2], cb, label = L"ΔInsolation (Wm$^{-2}$)")
+contour!(ax,
+         extrema(lons) ./ pi .* 180,
+         extrema(lats) ./ pi .* 180,
+         obldiff,
+         labels = true,
+         levels = vcat(-200:20:-20, 20:20:200),
+         color = :white
+)
+save("imgs/insolation_difference_obliquity_-2.47.png",
+     f,
+     size=(6inch, 3inch), px_per_unit = 300/inch)

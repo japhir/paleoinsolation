@@ -7,7 +7,7 @@
 #' @param lpx The longitude of perihelion from the moving equinox \eqn{bar omega}{\bar{\omega}}.
 #' @param longitude True solar longitude (rad). Defaults to June solstice pi/2.
 #' @param latitude Latitude on Earth (rad). Defaults to 65 degrees North.
-#' @param S0 Total solar irradiance (W m^-2). Defaults to 1361 W/m^2.
+#' @param S0 Total solar irradiance (W m^-2). Defaults to 1360.7 W/m^2.
 #' @param H Sun hour angle (rad). Daily mean by default (NULL).
 insolation <- function(#solution, # result of prep_solution
                        eccentricity, obliquity, lpx,
