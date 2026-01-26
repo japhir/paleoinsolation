@@ -1,12 +1,10 @@
-# This CITATION.cff file was generated with cffinit.
-# Visit https://bit.ly/cffinit to generate yours today!
-
 cff-version: 1.2.0
 title: >-
   paleoinsolation: New Insolation Forcing for Paleoclimate
   Models
 message: >-
-  If you use this software, please cite it using the
+  If you use this software, please cite both the article
+  from preferred-citation and the software itself using the
   metadata from this file.
 type: software
 authors:
@@ -22,7 +20,6 @@ identifiers:
 repository-code: 'https://github.com/japhir/paleoinsolation'
 repository-artifact: 'https://zenodo.org/records/17478419'
 abstract: >-
-
   To facilitate using recent astronomical solutions in
   General Circulation Models such as the Community Earth
   System Model, we make the ZB18a and ZB20a astronomical
@@ -40,3 +37,49 @@ keywords:
   - R
   - GCM
 license: GPL-3.0-or-later
+preferred-citation:
+  type: article
+  authors:
+    - family-names: Kocken
+      given-names: Ilja Japhir
+      email: ikocken@hawaii.edu
+      affiliation: University of Hawaii at Manoa
+      orcid: 'https://orcid.org/0000-0003-2196-8718'
+    - family-names: Zeebe
+      given-names: Richard E.
+      affiliation: University of Hawaii at Manoa
+      orcid: 'https://orcid.org/0000-0003-0806-8387'
+  year: 2026
+  title: >-
+    New Insolation Forcing for Paleoclimate Studies
+  journal: >-
+    Paleoceanography and Paleoclimate
+  volume: 41
+  issue: 1
+  doi: '10.1029/2025PA005287'
+  abstract: >-
+    Insolation forcing at the top of the atmosphere is widely used in
+    paleoceanographic and paleoclimatological studies. In paleoclimate
+    simulations, it must reflect Earth’s orbital history. General Circulation
+    Models (GCMs) typically use a modern orbital configuration to allow direct
+    comparison to modern and near-future scenarios, often with time slice
+    orbital experiments (DeepMIP, PlioMIP, etc.). However, especially in
+    transient simulations (e.g., of the past 3 Myr), orbital parameters from
+    outdated astronomical solutions (e.g., those labeled Ber78 and BL91) are
+    still used, potentially due to their integration in widely used models such
+    as the Community Earth System Model (CESM). These routines are particularly
+    inappropriate for deep-time simulations, for example, those targeting the
+    Eocene, when the eccentricity is incompatible and the obliquity amplitude
+    is too large compared to modern solutions. Furthermore, prior to −40 Myr,
+    the frequently used La04 solution should not be used. Our orbital
+    solutions, ZB18a and ZB20a, best match geologic data to 58 and 71 Ma,
+    respectively. In this study, we show that outdated astronomical solutions
+    yield incorrect top-of-atmosphere insolation. The difference between
+    insolation from Ber78 and our solution ZB18a(1,1) increases periodically
+    with increasing age, reaching significant offsets (up to 24 Wm⁻² at −934
+    kyr and −51 Wm⁻² at −2.1 Myr)—of the same order of magnitude as the orbital
+    forcing itself. To facilitate the use of updated astronomical solutions
+    (AS) in paleoclimate simulations, we provide ZB18a(1,1) and ZB20a(1,1) and
+    Fortran subroutines that interpolate the astronomical parameters and
+    compute insolation. We provide drop-in replacements for existing CESM
+    routines, hoping that proper AS inputs be used in future studies.

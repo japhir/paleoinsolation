@@ -7,9 +7,9 @@
 
 To facilitate using recent astronomical solutions in [[https://en.wikipedia.org/wiki/General_circulation_model][GCMs]] such as the [[https://www.cesm.ucar.edu/][CESM]], we make the ~ZB18a~ and ~ZB20a~ astronomical solutions readily available.
 
-This code is the supplement to a work-in-progress paper, available as a pre-print at:
+This code is the supplement to:
 
-Kocken, I.J.  and Zeebe, R.E. (2025). New Insolation Forcing for Paleoclimate Studies. ESS Open Archive. doi: [[https://doi.org/10.22541/essoar.175511741.18639670/v1][10.22541/essoar.175511741.18639670]]
+Kocken, I.J.  and Zeebe, R.E. (2026). New Insolation Forcing for Paleoclimate Studies.  /Paleoceanography and Paleoclimatology/ *41*, 1. doi: [[https://doi.org/10.1029/2025PA005287][10.1029/2025PA005287]]
 
 * Implementation in CESM
 We aim to make implementation in the Community Earth System Model as easy as possible, while allowing this project to be built and tested independently.
