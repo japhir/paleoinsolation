@@ -489,8 +489,8 @@ rowgap!(fmd.layout, 5)
 # # make it possible to click and get coordinates
 # # pt = select_point(ax_diff.scene)
 
-save("imgs/extrema_insolation.pdf", fmd, size=(5.5inch, 2.5inch), px_per_unit = 300/inch)
-# save("imgs/extrema_insolation.png", fmd, size=(5.5inch, 2.5inch), px_per_unit = 300/inch)
+# save("imgs/extrema_insolation.pdf", fmd, size=(5.5inch, 2.5inch), px_per_unit = 300/inch)
+save("imgs/extrema_insolation.png", fmd, size=(5.5inch, 2.5inch), px_per_unit = 300/inch)
 
 # Figure 6: ins differences combined
 # this uses my SNVec.jl interactive figure created in test_snvec.jl
