@@ -47,9 +47,9 @@ contains
   !===============================================================================
 
   !===============================================================================
-  ! New Insolation Forcing for Paleoclimate Studies
-  ! Kocken, I.J. and Zeebe, R.E. (2025). ESS Open Archive.
-  ! doi: 10.22541/essoar.175511741.18639670
+  ! Kocken, I.J. and Zeebe, R.E. (2026). New Insolation Forcing for
+  ! Paleoclimate Studies. Paleoceanography and Paleoclimatology 41, 1.
+  ! doi: 10.1029/2025PA005287
   ! https://github.com/japhir/paleoinsolation
   !===============================================================================
 
