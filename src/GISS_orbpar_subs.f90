@@ -1,3 +1,18 @@
+! 2026-01-26
+! Prof. Patrick J. Bartlein pointed me to the latest version
+! of the PaleoCalAdjust program, available on 
+! https://github.com/pjbartlein/PaleoCalAdjust
+! and archived on https://doi.org/10.5281/zenodo.5535025
+
+! Below is the adapted version of our orbpar subroutine
+! so that the parameters are the same as v1.1 of the
+! GISS_orbpar subroutine. This means this file can be
+! used as a drop-in replacement for the original
+! GISS_orbpar_subs.f90 file,
+! available on:
+! https://github.com/pjbartlein/PaleoCalAdjust/blob/master/f90/modules/GISS_orbpar_subs.f90
+! and archived on https://doi.org/10.5281/zenodo.5535025
+
 module giss_orbpar_subs
 
 ! This moodule is .f90 version of the ORBPAR() subroutine contained in the file
