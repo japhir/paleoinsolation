@@ -64,9 +64,9 @@ By default, the program generates 65°N peak summer insolation for the past 1 My
 - insolation for specified input parameters (Wm¯²)
 
 ** Drop-in replacements
-- [[file:src/orb.f90]] drop-in replacement for subroutine [[https://github.com/CESM-Development/paleoToolkit/blob/master/PaleoCalAdjust/f90/modules/GISS_orbpar_subs.f90][GISS_orbpars]] in [[https://github.com/CESM-Development/paleoToolkit/tree/master/PaleoCalAdjust][PaleoCalAdjust]].
-- [[file:CESM/]] drop-in replacement for the ~shr_orb_params~ subroutine in the [[https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90][shr_orb_mod]] module in [[https://github.com/ESCOMP/CDEPS/tree/main][CDEPS]] (see [[file:CESM/README.org]] for implementation!)
-- [[file:src/shr_orb_mod.F90]] is the stripped-down version of this file that is used for testing.
+- [[file:src/GISS_orbpar_subs.f90]] drop-in replacement for subroutine [[https://github.com/pjbartlein/PaleoCalAdjust/blob/master/f90/modules/GISS_orbpar_subs.f90][GISS_orbpar_subs.f90]] in [[https://github.com/pjbartlein/PaleoCalAdjust][PaleoCalAdjust]]. See [[file:PaleoCalAdjust.org]] for instructions.
+- [[file:CESM/]] drop-in replacement for the ~shr_orb_params~ subroutine in the [[https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90][shr_orb_mod]] module in [[https://github.com/ESCOMP/CDEPS/tree/main][CDEPS]]. See [[file:CESM/README.org]] for instructions.
+  - [[file:src/shr_orb_mod.F90]] is the stripped-down version of this file that is used for testing.
 
 ** Other
 We also provide the [[https://cran.r-project.org/][R]] functions [[file:R/insolation.R][insolation]] (calculates insolation, based on the R-package [[https://cran.r-project.org/package=palinsol][palinsol]]) and [[file:R/prep_solution.R][prep_solution]] (uses [[https://japhir.github.io/snvecR][snvecR]]) and the [[https://julialang.org/][Julia ]] code to generate the figures in the manuscript in [[file:figures.jl]].
