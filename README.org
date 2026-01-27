@@ -9,14 +9,14 @@ To facilitate using recent astronomical solutions in [[https://en.wikipedia.org/
 
 This code is the supplement to:
 
-Kocken, I.J.  and Zeebe, R.E. (2026). New Insolation Forcing for Paleoclimate Studies.  /Paleoceanography and Paleoclimatology/ *41*, 1. doi: [[https://doi.org/10.1029/2025PA005287][10.1029/2025PA005287]]
+Kocken, I.J.  and Zeebe, R.E. (2026). New Insolation Forcing for Paleoclimate Studies.  /Paleoceanography and Paleoclimatology/ *41* (1). doi: [[https://doi.org/10.1029/2025PA005287][10.1029/2025PA005287]]
 
 * Implementation in CESM
 We aim to make implementation in the Community Earth System Model as easy as possible, while allowing this project to be built and tested independently.
 
 The [[file:CESM/]] directory has all the files needed as well as a [[file:CESM/README.org]] on how to implement our code.
 
-If your projct uses [[https://github.com/pjbartlein/PaleoCalAdjust][PaleoCalAdjust]], see the directory [[file:PaleoCalAdjust/]] for a drop-in replacement file and [[file:PaleoCalAdjust/README.org]] for instructions.
+If your project uses [[https://github.com/pjbartlein/PaleoCalAdjust][PaleoCalAdjust]], see the directory [[file:PaleoCalAdjust/]] for a drop-in replacement file and [[file:PaleoCalAdjust/README.org]] for instructions.
 
 * Details
 We provide a [[file:Makefile][Makefile]] that downloads the orbital solutions and the [[https://github.com/rezeebe/snvec][snvec C program]], [[file:snvec.patch][patches]] snvec to also output the longitude of perihelion, and then compiles and runs snvec for the past 300 Myr to create the =ZB18a(1,1)= and =ZB20a(1,1)= solutions (where the numbers in parameters refer to the dynamical ellipticity and the tidal dissipation, respectively). Our main Fortran program then calculates 65°N peak summer insolation for the past 1 Myr from the =ZB18a(1,1)= solution.
@@ -66,7 +66,7 @@ By default, the program generates 65°N peak summer insolation for the past 1 My
 - insolation for specified input parameters (Wm¯²)
 
 ** Drop-in replacements
-- [[file:PaleoCalAdjust/GISS_orbpar_subs.f90]] drop-in replacement for subroutine [[https://github.com/pjbartlein/PaleoCalAdjust/blob/master/f90/modules/GISS_orbpar_subs.f90][GISS_orbpar_subs.f90]] in [[https://github.com/pjbartlein/PaleoCalAdjust][PaleoCalAdjust]]. See [[file:PaleoCalAdjust/README.org]] for instructions.
+- [[file:PaleoCalAdjust/KZ_orbpar_subs.f90]] drop-in replacement for subroutine [[https://github.com/pjbartlein/PaleoCalAdjust/blob/master/f90/modules/GISS_orbpar_subs.f90][GISS_orbpar_subs.f90]] in [[https://github.com/pjbartlein/PaleoCalAdjust][PaleoCalAdjust]]. See [[file:PaleoCalAdjust/README.org]] for instructions.
 - [[file:CESM/]] drop-in replacement for the ~shr_orb_params~ subroutine in the [[https://github.com/ESCOMP/CDEPS/blob/main/share/shr_orb_mod.F90][shr_orb_mod]] module in [[https://github.com/ESCOMP/CDEPS/tree/main][CDEPS]]. See [[file:CESM/README.org]] for instructions.
   - [[file:src/shr_orb_mod.F90]] is the stripped-down version of this file that is used for testing.
 
@@ -129,9 +129,14 @@ Feel free to create issues to ask for help.
 - [[https://cran.r-project.org/package=palinsol][palinsol]] :: R package to calculate insolation for the Berger (1978), Berger and Loutre (1991) and Laskar et al. (2004) solutions.
 
 * References
+Kocken, I.J.  and Zeebe, R.E. (2026). New Insolation Forcing for Paleoclimate Studies.  /Paleoceanography and Paleoclimatology/ *41* (1). doi: [[https://doi.org/10.1029/2025PA005287][10.1029/2025PA005287]]
 
-Zeebe, R. E., & Lourens, L. J. (2019). Solar System chaos and the Paleocene–Eocene boundary age constrained by geology and astronomy. Science, 365 (6456), 926–929. doi: [[https://doi.org/10.1126/science.aax0612][10.1126/science.aax0612]]
+Zeebe, R. E., & Lourens, L. J. (2019). Solar System chaos and the Paleocene–Eocene boundary age constrained by geology and astronomy. /Science/, *365* (6456), 926–929. doi: [[https://doi.org/10.1126/science.aax0612][10.1126/science.aax0612]]
 
-Zeebe, R. E., & Lourens, L. J. (2022a). A deep-time dating tool for paleo-applications utilizing obliquity and precession cycles: The role of dynamical ellipticity and tidal dissipation. Paleoceanography and Paleoclimatology, 37 (2), e2021PA004349. doi: [[https://doi.org/10.1029/2021PA004349][10.1029/2021PA004349]]
+Zeebe, R. E., & Lourens, L. J. (2022a). A deep-time dating tool for paleo-applications utilizing obliquity and precession cycles: The role of dynamical ellipticity and tidal dissipation. /Paleoceanography and Paleoclimatology/, *37* (2), e2021PA004349. doi: [[https://doi.org/10.1029/2021PA004349][10.1029/2021PA004349]]
 
-Zeebe, R. E., & Lourens, L. J. (2022b). Geologically constrained astronomical solutions for the Cenozoic era. Earth and Planetary Science Letters, 592, 375117595. doi: [[https://doi.org/10.1016/j.epsl.2022.117595][10.1016/j.epsl.2022.117595]]
+Zeebe, R. E., & Lourens, L. J. (2022b). Geologically constrained astronomical solutions for the Cenozoic era. /Earth and Planetary Science Letters/, *592*, 375117595. doi: [[https://doi.org/10.1016/j.epsl.2022.117595][10.1016/j.epsl.2022.117595]]
+
+Crucifix, M. (2023). Palinsol: A R package to compute incoming Solar Radiation (insolation) for palaeoclimate studies (v1.0) [Software]. /Zenodo/. doi: [[https://doi.org/10.5281/zenodo.14893715][10.5281/zenodo.14893715]]
+
+Bartlein, P. J. and Shafer, S. L. (2019). Paleo calendar-effect adjustments in time-slice and transient climate-model simulations (=PaleoCalAdjust v1.0=): impact and strategies for data analysis. /Geosci. Model Dev./, *12*, 3889-3913. doi: [[https://doi.org/10.5194/gmd-12-3889-2019][10.5194/gmd-12-3889-2019]]

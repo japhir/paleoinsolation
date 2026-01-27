@@ -8,7 +8,7 @@ To facilitate using recent astronomical solutions in [[https://en.wikipedia.org/
 
 This code is the supplement to:
 
-Kocken, I.J.  and Zeebe, R.E. (2026). New Insolation Forcing for Paleoclimate Studies.  /Paleoceanography and Paleoclimatology/ *41*, 1. doi: [[https://doi.org/10.1029/2025PA005287][10.1029/2025PA005287]]
+Kocken, I.J.  and Zeebe, R.E. (2026). New Insolation Forcing for Paleoclimate Studies.  /Paleoceanography and Paleoclimatology/ *41* (1). doi: [[https://doi.org/10.1029/2025PA005287][10.1029/2025PA005287]]
 
 * Implementation in PaleoCalAdjust
 We aim to make implementation in the Community Earth System Model as easy as possible.
@@ -36,8 +36,8 @@ We replace the =GISS_orbpar_subs.f90= file with =KZ_orbpar_subs.f90= and add nec
 4. Update the path to the data file in the =KZ_orbpar_subs.f90= file.
     Update the filepath in the line that starts with =call readbindata= to the absolute directory of the astronomical solution datafile.
 5. Make PaleoCalAdjust see our module
-   a. Change your Makefile to include =KZ_orbpar_subs.f90= file in favor of the original =GISS_orbpar_subs.f90= file OR
-   b. Replace =GISS_orbpar_subs.f90= file with our modified file
+   - Change your Makefile to include =KZ_orbpar_subs.f90= file in favor of the original =GISS_orbpar_subs.f90= file OR
+   - Replace =GISS_orbpar_subs.f90= file with our modified file
       #+begin_src sh
         mv KZ_orbpar_subs.f90 GISS_orbpar_subs.f90
       #+end_src
@@ -46,4 +46,4 @@ We replace the =GISS_orbpar_subs.f90= file with =KZ_orbpar_subs.f90= and add nec
 See [[https://github.com/japhir/paleoinsolation?tab=readme-ov-file#contributing-and-troubleshooting][Contributing and Troubleshooting]] if you need help.
 
 * References
-Bartlein, P. J. and Shafer, S. L. (2019). Paleo calendar-effect adjustments in time-slice and transient climate-model simulations (=PaleoCalAdjust v1.0=): impact and strategies for data analysis, /Geosci. Model Dev./, *12*, 3889-3913, https://doi.org/10.5194/gmd-12-3889-2019
+Bartlein, P. J. and Shafer, S. L. (2019). Paleo calendar-effect adjustments in time-slice and transient climate-model simulations (=PaleoCalAdjust v1.0=): impact and strategies for data analysis. /Geosci. Model Dev./, *12*, 3889-3913. doi: [[https://doi.org/10.5194/gmd-12-3889-2019][10.5194/gmd-12-3889-2019]]
