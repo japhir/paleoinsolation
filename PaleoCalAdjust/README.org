@@ -13,16 +13,37 @@ Kocken, I.J.  and Zeebe, R.E. (2026). New Insolation Forcing for Paleoclimate St
 * Implementation in PaleoCalAdjust
 We aim to make implementation in the Community Earth System Model as easy as possible.
 
-We replace the =GISS_orbpar_subs.f90= file from [[https://github.com/pjbartlein/PaleoCalAdjust/blob/master/f90/modules/GISS_orbpar_subs.f90][GISS_orbpar_subs.f90]] and add necessary data files to the same folder(s). 
+The current version of PaleoCalAdjust can be found at: 
+https://github.com/pjbartlein/PaleoCalAdjust and 
+https://zenodo.org/records/5535025
 
-1. Download the =GISS_orbpar_subs.f90= file
-      #+begin_src sh
-        wget https://github.com/japhir/paleoinsolation/raw/refs/heads/main/PaleoCalAdjust/GISS_orbpar_subs.f90
-      #+end_src
+We replace the =GISS_orbpar_subs.f90= file with =KZ_orbpar_subs.f90= and add necessary data files to the same folder(s). 
+
+1. Download the =KZ_orbpar_subs.f90= file
+  #+begin_src sh
+    wget https://github.com/japhir/paleoinsolation/raw/refs/heads/main/PaleoCalAdjust/KZ_orbpar_subs.f90
+  #+end_src
 2. Choose whether you want to use =ZB18a(1,1)= (default) or =ZB20a(1,1)=
 3. Download the appropriate =.bin= file(s) for your desired orbital solution from our [[file:../dat/]] directory.
-4. Update the path to the data file in the =GISS_orbpar_subs.f90= file.
+   - ZB18a(1,1)
+   #+begin_src sh
+     wget https://github.com/japhir/paleoinsolation/raw/refs/heads/main/dat/PT-ZB18a_1-1.bin
+   #+end_src 
+   - ZB20a(1,1)
+   #+begin_src sh 
+     wget https://github.com/japhir/paleoinsolation/raw/refs/heads/main/dat/PT-ZB20a_1-1.bin
+   #+end_src
+4. Update the path to the data file in the =KZ_orbpar_subs.f90= file.
     Update the filepath in the line that starts with =call readbindata= to the absolute directory of the astronomical solution datafile.
-5. Test if it will build.
+5. Make PaleoCalAdjust see our module
+   a. Change your Makefile to include =KZ_orbpar_subs.f90= file in favor of the original =GISS_orbpar_subs.f90= file OR
+   b. Replace =GISS_orbpar_subs.f90= file with our modified file
+      #+begin_src sh
+        mv KZ_orbpar_subs.f90 GISS_orbpar_subs.f90
+      #+end_src
+6. Test if it will build.
 
 See [[https://github.com/japhir/paleoinsolation?tab=readme-ov-file#contributing-and-troubleshooting][Contributing and Troubleshooting]] if you need help.
+
+* References
+Bartlein, P. J. and Shafer, S. L. (2019). Paleo calendar-effect adjustments in time-slice and transient climate-model simulations (=PaleoCalAdjust v1.0=): impact and strategies for data analysis, /Geosci. Model Dev./, *12*, 3889-3913, https://doi.org/10.5194/gmd-12-3889-2019
